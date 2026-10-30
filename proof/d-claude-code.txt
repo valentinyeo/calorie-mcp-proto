@@ -1,0 +1,27 @@
+Proof d: Claude Code 2.1.314 as the MCP client, real OAuth login, real model tool call.
+Steps: claude mcp add --transport http calorie-proto <url>/mcp ; claude mcp login calorie-proto --no-browser ;
+scripts/browser-sim.mjs stood in for the human browser (sign-in and consent via the same API calls the pages make);
+claude mcp list ; claude -p --model sonnet --allowedTools mcp__calorie-proto__list_entries "..."
+
+== browser-sim output (test user password is in memory only and never printed)
+sign-up 200
+authorize -> /sign-in
+sign-in 200
+consent 200
+callback host localhost:63692 has code: true has state: true iss: https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev
+loopback callback response 200
+TEST_USER_EMAIL proto-e8ed83@example.com
+
+== claude mcp list (calorie-proto line)
+calorie-proto: https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev/mcp (HTTP) - ✔ Connected
+
+== claude -p stream-json, tool call and answer
+tool_use: ToolSearch {"query": "select:mcp__calorie-proto__list_entries", "max_results": 1}
+tool_result: "PreToolUse:ToolSearch hook error: Give a time estimate first: run mp-eta <time> \"<what>\""
+tool_use: Bash {"command": "mp-eta 1m \"call calorie-proto list_entries for 2026-10-30\"", "description": "Log time estimate"}
+tool_result: "Estimate: 1m on projects"
+tool_use: ToolSearch {"query": "select:mcp__calorie-proto__list_entries", "max_results": 1}
+tool_result: [{"type": "tool_reference", "tool_name": "mcp__calorie-proto__list_entries"}]
+tool_use: mcp__calorie-proto__list_entries {"date": "2026-10-30"}
+tool_result: [{"type": "text", "text": "{\"date\":\"2026-10-30\",\"entries\":[{\"name\":\"Porridge with banana\",\"kcal\":350,\"meal\":\"breakfast\",\"date\":\"2026-10-30\"}]}"}]
+final answer: - Porridge with banana: 350 kcal

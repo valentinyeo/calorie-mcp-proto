@@ -1,0 +1,18 @@
+name = "calorie-mcp-proto"
+main = "src/index.ts"
+account_id = "7865043d9ae730882b77f3d5d670c158"
+compatibility_date = "2025-03-10"
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
+workers_dev = true
+
+[vars]
+PUBLIC_URL = "https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev"
+SIGNUP_OPEN = "0"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "calorie-mcp-proto"
+database_id = "64fbc14f-e4f8-4ada-a686-fdcc83a98909"
+
+[observability]
+enabled = true

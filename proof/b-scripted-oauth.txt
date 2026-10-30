@@ -1,0 +1,120 @@
+== 0. sign up test user proto-f60245@example.com
+sign-up status 200
+seeded entry for 2026-10-30
+== 1. register client (RFC 7591)
+register status 201 {
+  "client_id": "TwkVaXEpdFhMHEhdeFvCqYGgywssPsgn",
+  "token_endpoint_auth_method": "none",
+  "redirect_uris": [
+    "http://127.0.0.1:8976/callback"
+  ]
+}
+== 2. authorize (no session yet)
+authorize status 200 -> /sign-in
+== 2b. sign in through the login page's API call
+sign-in status 200 {
+  "redirect": true,
+  "url": "/consent"
+}
+== 2c. consent
+consent status 200 {
+  "url": "http://127.0.0.1:8976/callback"
+}
+callback params {
+  "state_ok": true,
+  "iss": "https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev",
+  "has_code": true
+}
+== 3. token exchange (PKCE S256, resource indicator)
+token status 200 {
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "scope": "mcp:read offline_access",
+  "has_refresh_token": true
+}
+access token claims {
+  "iss": "https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev",
+  "aud": "https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev/mcp",
+  "azp": "<client_id>",
+  "scope": "mcp:read offline_access",
+  "sub": "<user id>",
+  "exp_in": 3600
+}
+== 4. MCP calls with the bearer token
+initialize {
+  "status": 200,
+  "body": {
+    "result": {
+      "protocolVersion": "2025-06-18",
+      "capabilities": {
+        "tools": {
+          "listChanged": true
+        }
+      },
+      "serverInfo": {
+        "name": "calorie-mcp-proto",
+        "version": "0.0.1"
+      }
+    },
+    "jsonrpc": "2.0",
+    "id": 1
+  }
+}
+tools/list {
+  "status": 200,
+  "body": {
+    "result": {
+      "tools": [
+        {
+          "name": "list_entries",
+          "description": "List the signed-in user's food log entries for one date (YYYY-MM-DD). Read-only.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "Date, YYYY-MM-DD"
+              }
+            },
+            "required": [
+              "date"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "destructiveHint": false,
+            "idempotentHint": true,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          }
+        }
+      ]
+    },
+    "jsonrpc": "2.0",
+    "id": 2
+  }
+}
+tools/call list_entries {
+  "status": 200,
+  "body": {
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"date\":\"2026-10-30\",\"entries\":[{\"name\":\"Porridge with banana\",\"kcal\":350,\"meal\":\"breakfast\",\"date\":\"2026-10-30\"}]}"
+        }
+      ]
+    },
+    "jsonrpc": "2.0",
+    "id": 3
+  }
+}
+PASS: got porridge row
+other date (expect empty) {"date":"1999-01-01","entries":[]}
+== 5. refresh status 200 {
+  "rotated": true
+}
