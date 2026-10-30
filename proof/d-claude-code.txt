@@ -25,3 +25,6 @@ tool_result: [{"type": "tool_reference", "tool_name": "mcp__calorie-proto__list_
 tool_use: mcp__calorie-proto__list_entries {"date": "2026-10-30"}
 tool_result: [{"type": "text", "text": "{\"date\":\"2026-10-30\",\"entries\":[{\"name\":\"Porridge with banana\",\"kcal\":350,\"meal\":\"breakfast\",\"date\":\"2026-10-30\"}]}"}]
 final answer: - Porridge with banana: 350 kcal
+
+== isolation check (D1 query after the run)
+9 test users each own one "Porridge with banana" row for 2026-10-30. The Claude Code session was signed in as proto-e8ed83 and got exactly one row, so the tool is scoped to the signed-in user.

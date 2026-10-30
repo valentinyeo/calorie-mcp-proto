@@ -39,6 +39,8 @@ Why Better Auth and not the Cloudflare `workers-oauth-provider` library: that li
 
 Proof files are redacted. They contain no bearer tokens, passwords or cookies. The a to d runs were against the live worker.
 
+Proofs b, c and d ran before the final redeploy that closed sign-up and trimmed error text; the tool path did not change. Proof a was re-run on the final version.
+
 Caveat for d: the "browser" step was played by `scripts/browser-sim.mjs`, which makes the same HTTP calls the sign-in and consent pages make. A human browser was not used. Claude Code itself did the discovery, registration, PKCE, token exchange and tool call.
 
 ## Manual steps for proof e (needs a human with a Claude or ChatGPT account)
