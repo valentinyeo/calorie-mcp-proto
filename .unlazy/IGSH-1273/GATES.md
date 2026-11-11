@@ -1,22 +1,50 @@
-# IGSH-1273 gates
+# Gates: IGSH-1273 real food-log MCP server
 
-Ticket: https://app.hypertask.ai/detail/project-2060/1273
-Scope: build the real food-log MCP server from the prototype: spec tables, six tools
-(get_day, list_entries, add_entry, update_entry, delete_entry, set_goal), Google sign-in
-wiring, per-user isolation. No payments, no Android, no photo. Deploy on the existing free
-worker (no spend).
+OWNS: src/**, migrations/**, scripts/**, proof/**, README.md
 
-| # | Gate (done means) | Evidence required |
-|---|---|---|
-| G1 | D1 schema matches the spec: profile (goal, timezone, pro_until) plus entries (eaten_at, local_date, macros, portion, source, client_name, soft delete) | migration file applied locally and on the live D1, `pragma table_info` output |
-| G2 | Six tools registered with the exact names | MCP Inspector CLI `tools/list` output |
-| G3 | Every tool call passes: add porridge, get day total, list, edit, delete, set goal | Inspector CLI `tools/call` output for all six, live worker |
-| G4 | A second user never sees the first user's entries (read, edit, delete) | two-user isolation run: user B sees empty day, B cannot edit or delete A's entry |
-| G5 | Sign-in still works end to end: DCR, PKCE, consent, token, MCP call | scripted OAuth run against the live worker, PASS line |
-| G6 | Google sign-in is wired and switches on with GOOGLE_CLIENT_ID/SECRET; email sign-in still works without it | code path + proof that email flow still passes (Google needs Valentin's free OAuth client) |
-| G7 | Live and merged: PR merged to main, worker serving the new tools | PR URL, merge commit SHA, live call after deploy |
-| G8 | Typecheck clean, no uncommitted changes | `tsc --noEmit` exit 0, `git status` clean |
+Scope: the merged v1 food-log MCP server defines the six spec tools on the spec schema, typechecks, runs live, refuses unauthenticated calls, and its committed proofs show a green two-user run.
 
-Waiver note: Claude Code connect (ticket Done-when 2 and 3) is replaced by the scripted
-OAuth client plus MCP Inspector CLI, because this runner may not use another model or
-provider. The prototype proof d covers Claude Code on the same auth stack.
+- [ ] G1: the merged source registers exactly the six spec tools
+  CHECK: node scripts/verify-v1.mjs tools
+  EXPECT: v1 tools: six registered
+  EVIDENCE: pending
+
+- [ ] G2: the schema carries every spec column plus soft delete, and keeps the prototype rows
+  CHECK: node scripts/verify-v1.mjs schema
+  EXPECT: v1 schema: spec columns present
+  EVIDENCE: pending
+
+- [ ] G3: the repository typechecks with strict mode
+  CHECK: node scripts/verify-v1.mjs typecheck
+  EXPECT: v1 typecheck: clean
+  EVIDENCE: pending
+
+- [ ] G4: the deployed worker advertises exactly the six tools
+  CHECK: node scripts/verify-v1.mjs live
+  EXPECT: v1 live: six tools
+  EVIDENCE: pending
+
+- [ ] G5: an unauthenticated MCP call is refused with the metadata challenge and the read/write scopes
+  CHECK: node scripts/verify-v1.mjs auth
+  EXPECT: v1 auth: challenge intact
+  EVIDENCE: pending
+
+- [ ] G6: the committed live run is green and asserts that a second user cannot read, edit or delete the first user's entries
+  CHECK: node scripts/verify-v1.mjs proof
+  EXPECT: v1 proof: green live run with isolation
+  EVIDENCE: pending
+
+- [ ] G7: the committed Inspector run lists all six tools and every call exited zero
+  CHECK: node scripts/verify-v1.mjs inspector
+  EXPECT: v1 inspector: six tools called
+  EVIDENCE: pending
+
+- [ ] G8: the IGSH-1273 squash merge is an ancestor of main
+  CHECK: node scripts/verify-v1.mjs merged 84b73106aee405b5b8901a82044d038a4e770492
+  EXPECT: v1 merged: commit on main
+  EVIDENCE: pending
+
+- [ ] G9: Claude Code adds the server, signs in, adds porridge and reads the day total back
+  EVIDENCE: pending
+
+ABANDON: G9 this runner may not use another model or provider, so Claude Code cannot be driven here. Handoff: a lead or Valentin opens sign-up, creates a user, then adds https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev/mcp in Claude Code once, as README describes. Scripted OAuth and MCP Inspector cover every other path against the same auth stack.

@@ -4,3 +4,4 @@ node_modules/
 .env
 *.log
 node_modules
+.unlazy/IGSH-1273/hook-state.json
