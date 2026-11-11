@@ -4,6 +4,7 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import { createAuth, MCP_PATH, MCP_SCOPES, type Env } from "./auth";
 import { consentPage, signInPage } from "./pages";
 import { registerTools } from "./tools";
+import { appApi } from "./app-api";
 
 const TOOL_NAMES = [
   "get_day",
@@ -28,7 +29,7 @@ export default {
     if (url.pathname === "/health") return Response.json({ ok: true, tools: TOOL_NAMES });
 
     const auth = createAuth(env);
-    if (url.pathname === "/mcp") {
+    if (url.pathname === "/mcp" || url.pathname.startsWith("/api/app/")) {
       // Stateless transport: initialize and tools/call are separate requests, so the SDK's
       // clientInfo does not survive. The client label comes from the request user agent
       // (Claude Code sends "claude-code/..."); it is a display label only, never a trust input.
@@ -38,6 +39,7 @@ export default {
         auth,
         async (req, claims) => {
           try {
+            if (url.pathname.startsWith("/api/app/")) return await appApi(req, env.DB, String(claims.sub));
             const transport = new WebStandardStreamableHTTPServerTransport({
               sessionIdGenerator: undefined,
               enableJsonResponse: true,
@@ -55,7 +57,13 @@ export default {
             );
           }
         },
-        { resource: env.PUBLIC_URL + MCP_PATH, challengeScopes: MCP_SCOPES.filter((s) => s !== "offline_access") },
+        {
+          resource: env.PUBLIC_URL + MCP_PATH,
+          challengeScopes: MCP_SCOPES.filter((s) => s !== "offline_access"),
+          ...(url.pathname.startsWith("/api/app/")
+            ? { requiredScopes: [request.method === "GET" ? "mcp:read" : "mcp:write"] }
+            : {}),
+        },
       );
       try {
         return await handler(request);

@@ -7,6 +7,41 @@ https://app.hypertask.ai/detail/project-2060/1273, built to `docs/spec.md`.
 
 Live worker: https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev (MCP endpoint: https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev/mcp)
 
+## Android home (IGSH-1274)
+
+Native Kotlin/Compose app: `android/`. Uses the Home C reference linked from
+https://app.hypertask.ai/detail/project-2060/1274. Today is cached locally and
+refreshed on resume and every 30 seconds while foregrounded. The profile timezone
+controls today; yesterday's cache is discarded at midnight. Tokens and the day
+cache are encrypted with an Android Keystore key and excluded from backups.
+
+The app opens the system browser for OAuth authorization-code login with PKCE,
+state validation and refresh-token rotation. Google appears on the existing
+sign-in page when the Worker's Google credentials are configured. Without those
+credentials, existing email/password accounts can sign in. No credentials or
+external AI service are bundled in the APK. Sign-out clears local account data.
+
+App routes reuse MCP's database functions and OAuth tokens (audience `/mcp`):
+
+| Route | Scope | Result |
+|---|---|---|
+| `GET /api/app/day` | `mcp:read` | Today in the profile timezone; totals, timezone, newest-first entries |
+| `POST /api/app/entries` | `mcp:write` | Add name, integer kcal, optional portion; source `app` |
+| `PATCH /api/app/entries/:id` | `mcp:write` | Edit name, kcal or portion |
+| `DELETE /api/app/entries/:id` | `mcp:write` | Soft delete |
+| `POST /api/app/entries/:id/restore` | `mcp:write` | Undo within 30 seconds, preserving the ID, time and source |
+
+All entry routes are scoped to the authenticated user. Mutation responses include
+the entry and refreshed today. Requests never contain a trusted user ID.
+
+GitHub-hosted `Android home` checks build the debug APK, run Kotlin day/cache
+boundary tests and lint, and exercise the real local Worker through OAuth/MCP and
+the app API with multiple users. Download the `calorie-tracker-debug` artifact for
+the debug APK; `android-api-proof` contains redacted shared-log evidence.
+Builds and tests do not run on the VPS. This ticket does not publish to Play or
+use paid services. Device recording, cold-start timing, Google sign-in and
+independent Figma QA must be proven before calling this release complete.
+
 ## v1 server (IGSH-1273)
 
 Six MCP tools, every one scoped to the signed-in user:
@@ -127,4 +162,4 @@ I could not see the account's plan from the tokens. The sign-in path (PBKDF2 has
 - `src/pages.ts` plain HTML sign-in and consent pages.
 - `migrations/` D1 schema (Better Auth tables, then `entries`).
 - `scripts/e2e.mjs` proofs b and c. `scripts/browser-sim.mjs` stands in for the browser in proof d. `scripts/gen-schema.mjs` regenerates the Better Auth migration. `scripts/proof-a.sh` proof a.
-- No GitHub Actions workflows on purpose: this is a private repo and hosted minutes are not allowed there.
+- `.github/workflows/android.yml` runs APK, Kotlin and shared-log checks on GitHub-hosted runners.

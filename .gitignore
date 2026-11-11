@@ -1,4 +1,9 @@
 node_modules/
+.unlazy/
+android/.gradle/
+android/.kotlin/
+android/**/build/
+android/local.properties
 .wrangler/
 .dev.vars
 .env
