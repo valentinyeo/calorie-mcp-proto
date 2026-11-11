@@ -1,0 +1,320 @@
+$ npx @modelcontextprotocol/inspector --cli http://127.0.0.1:8787/mcp --transport http --header "Authorization: Bearer <redacted>" --method tools/list 
+exit=0
+{
+  "tools": [
+    {
+      "name": "get_day",
+      "description": "Read one day of the signed-in user's food log: calories eaten, the daily goal, calories left and macros. Defaults to today in the user's timezone. Use this for questions like 'how much have I eaten today'.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "description": "Day to read, YYYY-MM-DD. Defaults to today.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "list_entries",
+      "description": "List food log entries for one day, or for a date range. Read-only. Defaults to today in the user's timezone.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "description": "Single day, YYYY-MM-DD.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "from": {
+            "description": "Range start, YYYY-MM-DD.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "to": {
+            "description": "Range end, YYYY-MM-DD.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "add_entry",
+      "description": "Add one food entry to the signed-in user's log and return the entry plus the new day total. Estimate the calories yourself from the food and portion the user describes, and state the estimate in your reply. Do not invent macro values: leave them out when you are not confident.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Food name, e.g. 'Porridge with banana'"
+          },
+          "kcal": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20000,
+            "description": "Calories for this portion, integer"
+          },
+          "protein_g": {
+            "description": "Protein in grams",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2000
+          },
+          "carbs_g": {
+            "description": "Carbohydrate in grams",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2000
+          },
+          "fat_g": {
+            "description": "Fat in grams",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2000
+          },
+          "portion_text": {
+            "description": "Portion as the user said it, e.g. '1 bowl'",
+            "type": "string",
+            "maxLength": 120
+          },
+          "eaten_at": {
+            "description": "When it was eaten, ISO 8601 instant. Defaults to now. Convert local times to UTC.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "kcal"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "update_entry",
+      "description": "Change fields of one existing entry (for example its calories or portion). Only the fields you pass change. The entry must belong to the signed-in user.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Entry id from get_day or list_entries"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "kcal": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20000
+          },
+          "protein_g": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2000
+          },
+          "carbs_g": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2000
+          },
+          "fat_g": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2000
+          },
+          "portion_text": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "eaten_at": {
+            "description": "New time, ISO 8601 instant (UTC)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "delete_entry",
+      "description": "Delete one entry (soft delete, so it can be undone). Confirm with the user before deleting, unless they already said to delete it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Entry id from get_day or list_entries"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "set_goal",
+      "description": "Set the signed-in user's daily calorie goal in kcal. Returns the new goal.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "kcal": {
+            "type": "integer",
+            "minimum": 500,
+            "maximum": 10000,
+            "description": "Daily goal in kcal"
+          },
+          "timezone": {
+            "description": "Optional IANA timezone, e.g. Europe/London, to fix which day entries count against",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kcal"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}
+
+
+$ npx @modelcontextprotocol/inspector --cli http://127.0.0.1:8787/mcp --transport http --header "Authorization: Bearer <redacted>" --method tools/call --tool-name add_entry --tool-arg name=Porridge --tool-arg kcal=350 --tool-arg portion_text=1 bowl
+exit=0
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"entry\": {\n    \"id\": 6,\n    \"eaten_at\": \"2026-11-11T13:13:12.767Z\",\n    \"local_date\": \"2026-11-11\",\n    \"name\": \"Porridge\",\n    \"kcal\": 350,\n    \"protein_g\": null,\n    \"carbs_g\": null,\n    \"fat_g\": null,\n    \"portion_text\": \"1 bowl\",\n    \"source\": \"mcp\",\n    \"client_name\": \"mcp-inspector\"\n  },\n  \"day\": {\n    \"date\": \"2026-11-11\",\n    \"goal_kcal\": 1800,\n    \"consumed_kcal\": 350,\n    \"remaining_kcal\": 1450,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0\n  }\n}"
+    }
+  ]
+}
+
+
+$ npx @modelcontextprotocol/inspector --cli http://127.0.0.1:8787/mcp --transport http --header "Authorization: Bearer <redacted>" --method tools/call --tool-name get_day
+exit=0
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"date\": \"2026-11-11\",\n  \"goal_kcal\": 1800,\n  \"consumed_kcal\": 350,\n  \"remaining_kcal\": 1450,\n  \"protein_g\": 0,\n  \"carbs_g\": 0,\n  \"fat_g\": 0,\n  \"entries\": [\n    {\n      \"id\": 6,\n      \"eaten_at\": \"2026-11-11T13:13:12.767Z\",\n      \"local_date\": \"2026-11-11\",\n      \"name\": \"Porridge\",\n      \"kcal\": 350,\n      \"protein_g\": null,\n      \"carbs_g\": null,\n      \"fat_g\": null,\n      \"portion_text\": \"1 bowl\",\n      \"source\": \"mcp\",\n      \"client_name\": \"mcp-inspector\"\n    }\n  ]\n}"
+    }
+  ]
+}
+
+
+$ npx @modelcontextprotocol/inspector --cli http://127.0.0.1:8787/mcp --transport http --header "Authorization: Bearer <redacted>" --method tools/call --tool-name list_entries --tool-arg date=2026-11-11
+exit=0
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"from\": \"2026-11-11\",\n  \"to\": \"2026-11-11\",\n  \"count\": 1,\n  \"entries\": [\n    {\n      \"id\": 6,\n      \"eaten_at\": \"2026-11-11T13:13:12.767Z\",\n      \"local_date\": \"2026-11-11\",\n      \"name\": \"Porridge\",\n      \"kcal\": 350,\n      \"protein_g\": null,\n      \"carbs_g\": null,\n      \"fat_g\": null,\n      \"portion_text\": \"1 bowl\",\n      \"source\": \"mcp\",\n      \"client_name\": \"mcp-inspector\"\n    }\n  ]\n}"
+    }
+  ]
+}
+
+
+$ npx @modelcontextprotocol/inspector --cli http://127.0.0.1:8787/mcp --transport http --header "Authorization: Bearer <redacted>" --method tools/call --tool-name update_entry --tool-arg id=6 --tool-arg kcal=420
+exit=0
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"entry\": {\n    \"id\": 6,\n    \"eaten_at\": \"2026-11-11T13:13:12.767Z\",\n    \"local_date\": \"2026-11-11\",\n    \"name\": \"Porridge\",\n    \"kcal\": 420,\n    \"protein_g\": null,\n    \"carbs_g\": null,\n    \"fat_g\": null,\n    \"portion_text\": \"1 bowl\",\n    \"source\": \"mcp\",\n    \"client_name\": \"mcp-inspector\"\n  },\n  \"day\": {\n    \"date\": \"2026-11-11\",\n    \"goal_kcal\": 1800,\n    \"consumed_kcal\": 420,\n    \"remaining_kcal\": 1380,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0\n  }\n}"
+    }
+  ]
+}
+
+
+$ npx @modelcontextprotocol/inspector --cli http://127.0.0.1:8787/mcp --transport http --header "Authorization: Bearer <redacted>" --method tools/call --tool-name set_goal --tool-arg kcal=2100
+exit=0
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"goal_kcal\": 2100,\n  \"timezone\": \"Europe/London\"\n}"
+    }
+  ]
+}
+
+
+$ npx @modelcontextprotocol/inspector --cli http://127.0.0.1:8787/mcp --transport http --header "Authorization: Bearer <redacted>" --method tools/call --tool-name delete_entry --tool-arg id=6
+exit=0
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"ok\": true,\n  \"deleted\": {\n    \"id\": 6,\n    \"eaten_at\": \"2026-11-11T13:13:12.767Z\",\n    \"local_date\": \"2026-11-11\",\n    \"name\": \"Porridge\",\n    \"kcal\": 420,\n    \"protein_g\": null,\n    \"carbs_g\": null,\n    \"fat_g\": null,\n    \"portion_text\": \"1 bowl\",\n    \"source\": \"mcp\",\n    \"client_name\": \"mcp-inspector\"\n  },\n  \"day\": {\n    \"date\": \"2026-11-11\",\n    \"goal_kcal\": 2100,\n    \"consumed_kcal\": 0,\n    \"remaining_kcal\": 2100,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0\n  }\n}"
+    }
+  ]
+}
+

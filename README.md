@@ -1,8 +1,47 @@
 # calorie-mcp-proto
 
-Throwaway prototype. It answers one question: can a Cloudflare-hosted MCP server with Better Auth login be added as a connector by Claude and ChatGPT, and read one entry? Nothing here is the product.
+Started as a throwaway prototype: can a Cloudflare-hosted MCP server with Better Auth login be
+added as a connector by Claude and ChatGPT, and read one entry? The test passed (proofs a to d).
+It is now the v1 food-log server for ticket
+https://app.hypertask.ai/detail/project-2060/1273, built to `docs/spec.md`.
 
 Live worker: https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev (MCP endpoint: https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev/mcp)
+
+## v1 server (IGSH-1273)
+
+Six MCP tools, every one scoped to the signed-in user:
+
+| Tool | What it does |
+|---|---|
+| `get_day` | one day: calories eaten, goal, calories left, macros, entries. Defaults to today in the user's timezone |
+| `list_entries` | entries for one day or a date range |
+| `add_entry` | add a food (name, kcal, optional macros, portion, time) and return the new day total |
+| `update_entry` | change any field of one entry |
+| `delete_entry` | soft delete, undo-safe, returns the new day total |
+| `set_goal` | set the daily kcal goal, optionally fix the timezone |
+
+Data lives in D1 per the spec: a `profile` row per user (goal, timezone, `pro_until`) and
+`entries` with `eaten_at`, `local_date`, macros, portion, `source`, `client_name`, soft delete.
+`local_date` is stamped at write time from the user's IANA timezone, so a day follows the user,
+not UTC. Day totals are computed on read and never stored. The free plan reads the last 30 days;
+`pro_until` lifts that. Refusals read "That date is outside your plan's range" and mention no price.
+
+Why a separate `profile` table rather than columns on `user`: Better Auth owns `user` and
+regenerates its schema, so the app keeps its own 1:1 row instead of fighting it.
+
+Google sign-in is wired and switches on when both `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
+are set as Worker secrets; the sign-in page then shows "Continue with Google". Without them the
+email and password form is used, which is what the proof run covers. Creating the Google OAuth
+client is free but needs Valentin's Google Cloud project (two values, 2 minutes).
+
+Client label: the stateless transport does not carry MCP `clientInfo` between requests, so
+`client_name` comes from the request user agent (`claude-code`, `node`, ...). It is a display
+label only, never used for trust.
+
+Proof of the v1 server: `proof/e-v1-e2e.txt` (scripted OAuth for two users, every tool, isolation)
+and `proof/f-v1-inspector.txt` (MCP Inspector CLI listing all six tools and calling each one).
+Re-run with `node scripts/e2e-v1.mjs` (local) or `BASE=https://... node scripts/e2e-v1.mjs` (live).
+The rest of this file describes the original prototype and is kept as history.
 
 ## Chosen setup and why
 
