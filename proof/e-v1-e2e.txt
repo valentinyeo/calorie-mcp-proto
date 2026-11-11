@@ -1,5 +1,6 @@
+IGSH-1273 v1 end-to-end. Base https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev. Run at 2026-11-11T13:15:43.266Z.
 
-== a: sign up v1-a-d2ef62@example.com
+== a: sign up v1-a-2aa756@example.com
 PASS: a sign-up -> 200
 PASS: a dynamic client registration -> 201
 PASS: a authorize sends an anonymous caller to the sign-in page -> "/sign-in"
@@ -8,7 +9,7 @@ PASS: a consent returns the right state -> true
 PASS: a token exchange with PKCE -> {"status":200}
 PASS: A initialize -> {"name":"calorie-tracker","version":"1.0.0"}
 PASS: A tools/list has exactly the six tools -> ["add_entry","delete_entry","get_day","list_entries","set_goal","update_entry"]
-PASS: A add_entry porridge -> {"id":5,"eaten_at":"2026-11-11T13:13:02.306Z","local_date":"2026-11-11","name":"Porridge with banana","kcal":350,"protein_g":12,"carbs_g":60,"fat_g":6,"portion_text":"1 bowl","source":"mcp","client_name":"v1-e2e-script"}
+PASS: A add_entry porridge -> {"id":10,"eaten_at":"2026-11-11T13:15:47.758Z","local_date":"2026-11-11","name":"Porridge with banana","kcal":350,"protein_g":12,"carbs_g":60,"fat_g":6,"portion_text":"1 bowl","source":"mcp","client_name":"v1-e2e-script"}
 PASS: A add_entry returns the new day total -> {"date":"2026-11-11","goal_kcal":2000,"consumed_kcal":350,"remaining_kcal":1650,"protein_g":12,"carbs_g":60,"fat_g":6}
 PASS: A entry records source and client name -> {"source":"mcp","client":"v1-e2e-script"}
 PASS: A get_day (default today) reads it back -> {"consumed":350,"entries":1}
@@ -19,7 +20,7 @@ PASS: A get_day reflects the new goal -> {"goal":1800,"left":1400}
 PASS: A list_entries date range -> 1
 PASS: A read older than 30 days is refused with the plain error -> "That date is outside your plan's range (free plan: 2026-10-13 onwards)."
 
-== b: sign up v1-b-bd593e@example.com
+== b: sign up v1-b-8ae7b2@example.com
 PASS: b sign-up -> 200
 PASS: b dynamic client registration -> 201
 PASS: b authorize sends an anonymous caller to the sign-in page -> "/sign-in"
@@ -30,13 +31,13 @@ PASS: B initialize -> 200
 PASS: B get_day sees an empty log, not A's entry -> {"consumed":0,"entries":0}
 PASS: B list_entries on A's date is empty -> 0
 PASS: B range read never contains A's entry
-PASS: B cannot update A's entry -> "no entry with id 5"
-PASS: B cannot delete A's entry -> "no entry with id 5"
+PASS: B cannot update A's entry -> "no entry with id 10"
+PASS: B cannot delete A's entry -> "no entry with id 10"
 PASS: A's entry is untouched after B's attempts -> 1
 PASS: A delete_entry soft-deletes and returns the new total -> {"ok":true,"consumed":0}
 PASS: A deleted entry no longer counts -> {"entries":0,"consumed":0}
 PASS: Inspector tools/list lists all six tools -> ["\"name\": \"get_day\"","\"name\": \"list_entries\"","\"name\": \"add_entry\"","\"name\": \"update_entry\"","\"name\": \"delete_entry\"","\"name\": \"set_goal\""]
-PASS: Inspector add_entry -> {"id":6}
+PASS: Inspector add_entry -> {"id":11}
 PASS: Inspector get_day -> "\"consumed_kcal\": 350"
 PASS: Inspector list_entries -> "\"count\": 1"
 PASS: Inspector update_entry -> "\"kcal\": 420"
