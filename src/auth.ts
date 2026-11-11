@@ -7,9 +7,14 @@ export interface Env {
   PUBLIC_URL: string;
   SIGNUP_OPEN: string;
   AUTH_SIGNING_SECRET: string;
+  // Google sign-in stays off until both are set as Worker secrets. Email and password
+  // remains as the fallback for a user who has no Google account (spec: Auth flow).
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
 }
 
 export const MCP_PATH = "/mcp";
+export const MCP_SCOPES = ["mcp:read", "mcp:write", "offline_access"];
 
 // Workers Free allows ~10 ms CPU per request. Better Auth's default scrypt hash is
 // pure JS and far over that. Web Crypto PBKDF2 runs natively, so use it instead.
@@ -34,11 +39,17 @@ async function verify({ hash: stored, password }: { hash: string; password: stri
 }
 
 export function createAuth(env: Env) {
+  const google =
+    env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+      ? { clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET, prompt: "select_account" as const }
+      : undefined;
+
   return betterAuth({
     database: env.DB,
     secret: env.AUTH_SIGNING_SECRET,
     baseURL: env.PUBLIC_URL,
     basePath: "/",
+    ...(google ? { socialProviders: { google } } : {}),
     emailAndPassword: {
       enabled: true,
       disableSignUp: env.SIGNUP_OPEN !== "1",
@@ -50,7 +61,7 @@ export function createAuth(env: Env) {
         loginPage: "/sign-in",
         consentPage: "/consent",
         resource: env.PUBLIC_URL + MCP_PATH,
-        scopes: ["mcp:read", "offline_access"],
+        scopes: MCP_SCOPES,
         // DCR fallback: Claude (when CIMD is not advertised) and ChatGPT both support it.
         allowDynamicClientRegistration: true,
         allowUnauthenticatedClientRegistration: true,
