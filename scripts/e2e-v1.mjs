@@ -12,7 +12,7 @@ const RESOURCE = BASE + "/mcp";
 const REDIRECT = "http://127.0.0.1:8976/callback";
 const PROOF = process.env.PROOF ?? "proof/e-v1-e2e.txt";
 
-const lines = [];
+const lines = [`IGSH-1273 v1 end-to-end. Base ${BASE}. Run at ${new Date().toISOString()}.`];
 const secrets = new Set();
 const redact = (s) => [...secrets].reduce((t, v) => t.split(v).join("<redacted>"), s);
 const log = (...a) => {
