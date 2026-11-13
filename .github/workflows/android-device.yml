@@ -40,6 +40,10 @@ jobs:
             | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+      - name: Check hardware acceleration
+        run: |
+          ls -l /dev/kvm || true
+          /usr/local/lib/android/sdk/emulator/emulator -accel-check || true
       - run: npm ci
       - name: Build the APK against the CI worker
         run: |
@@ -51,9 +55,10 @@ jobs:
       - name: Install, drive and record the app
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 34
+          api-level: 30
           arch: x86_64
-          target: google_apis
+          target: default
+          emulator-boot-timeout: 1200
           disable-animations: true
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: bash scripts/device-proof.sh
