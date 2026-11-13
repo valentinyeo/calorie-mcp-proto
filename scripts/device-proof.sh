@@ -21,13 +21,14 @@ if ! curl -sf http://127.0.0.1:8788/health > /dev/null; then
 fi
 
 adb wait-for-device
-# The emulator's first boot leaves the device briefly offline; wait for the package manager.
-for _ in $(seq 1 60); do
-  if adb shell pm path android > /dev/null 2>&1; then
+# Boot completion is separate from "device visible": wait for the framework to finish.
+for _ in $(seq 1 300); do
+  if [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; then
     break
   fi
   sleep 2
 done
+adb shell getprop sys.boot_completed
 
 adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 adb shell am start -n dev.calorie.tracker/.MainActivity
