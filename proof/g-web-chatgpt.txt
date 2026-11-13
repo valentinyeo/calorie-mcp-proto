@@ -1,0 +1,13 @@
+SOFT-1281 web connector proof. Base https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev. Callback https://chatgpt.com/connector_platform_oauth_redirect. Run at 2026-11-13T00:43:09.336Z.
+PASS: dynamic client registration accepts the connector callback -> {"redirect_uris":["https://chatgpt.com/connector_platform_oauth_redirect"]}
+PASS: authorize sends the connector to the server sign-in page -> "/sign-in"
+PASS: sign-in form submitted
+PASS: signed-in user reaches the consent page -> "/consent"
+PASS: consent approved
+PASS: connector callback received an authorization code -> "https://chatgpt.com/connector_platform_oauth_redirect"
+PASS: callback carried the same state -> "9a3d53e8933b2711"
+PASS: authorization code exchanged for an access token -> 200
+PASS: add_entry wrote the entry through the connector token -> {"id":17,"eaten_at":"2026-11-13T00:43:26.568Z","local_date":"2026-11-13","name":"Web connector test 2026-11-13T00:43Z","kcal":412,"protein_g":null,"carbs_g":null,"fat_g":null,"portion_text":"one bowl","source":"mcp","client_name":"node"}
+PASS: get_day reads the same entry back -> {"entries":["Web connector test 2026-11-13T00:42Z","Web connector test 2026-11-13T00:43Z"]}
+
+FAILURES: 0

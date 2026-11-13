@@ -62,7 +62,7 @@ Why Better Auth and not the Cloudflare `workers-oauth-provider` library: that li
 
 ## What failed or is not proven
 
-- Proof e (the hosted claude.ai and ChatGPT connector UIs) is UNPROVEN. No agent-owned claude.ai or ChatGPT account is documented for this box, and Valentin's own browser and accounts were off limits for this work. Manual steps are below.
+- Proof e (the hosted claude.ai and ChatGPT connector UIs) is still UNPROVEN, but no longer on the server side. A real Chrome tab now plays the connector half for both apps against the live worker and passes every step we control (see proof g). The two missing pieces are outside the box: claude.ai puts an interactive CAPTCHA in front of signing in, and ChatGPT has no account here. Details under proof e below.
 - Neither Pecunia token can create KV. That ruled out `workers-oauth-provider`.
 - CIMD is not enabled. Better Auth on Workers needs an injected transport that pins the resolved IP address to block server side request forgery, and workerd does not offer that. Claude uses CIMD only when the server advertises it, otherwise it falls back to DCR, which is what happened in the Claude Code run.
 
@@ -74,7 +74,8 @@ Why Better Auth and not the Cloudflare `workers-oauth-provider` library: that li
 | b | Scripted OAuth 2.1 flow (DCR, sign-in, consent, PKCE token exchange, refresh) then MCP initialize, tools/list, tools/call reading the seeded row | PASS | `proof/b-scripted-oauth.txt` |
 | c | MCP Inspector CLI with the bearer token: tools/list and tools/call return the row | PASS | `proof/c-inspector-cli.txt` |
 | d | Claude Code as a real MCP client: add server, OAuth login, Connected, model tool call returns the row | PASS | `proof/d-claude-code.txt` |
-| e | claude.ai custom connector and ChatGPT connector reading an entry | UNPROVEN | none, see below |
+| e | claude.ai custom connector and ChatGPT connector reading an entry | UNPROVEN, blocked on a signed-in web account | `proof/screenshots/` |
+| g | The connector half of the login, driven in a real Chrome tab, once per app: DCR with the app's own callback, `/sign-in`, `/consent`, the callback receiving a code with the matching state, token exchange, `add_entry`, `get_day` reading it back | PASS for claude.ai's and ChatGPT's callbacks | `proof/g-web-claude.txt`, `proof/g-web-chatgpt.txt` |
 
 Proof files are redacted. They contain no bearer tokens, passwords or cookies. The a to d runs were against the live worker.
 
@@ -82,11 +83,41 @@ Proofs b, c and d ran before the final redeploy that closed sign-up and trimmed 
 
 Caveat for d: the "browser" step was played by `scripts/browser-sim.mjs`, which makes the same HTTP calls the sign-in and consent pages make. A human browser was not used. Claude Code itself did the discovery, registration, PKCE, token exchange and tool call.
 
-## Manual steps for proof e (needs a human with a Claude or ChatGPT account)
+## Where proof e stops (2026-11-13, SOFT-1281)
 
-Sign-up is closed on the live worker (`SIGNUP_OPEN = "0"`). Open it first by setting `SIGNUP_OPEN = "1"` in `wrangler.toml` and running `wrangler deploy`, create a user by POSTing to `/sign-up/email`, seed a row in the `entries` table (`user_id` is the Better Auth user id), then close sign-up again.
+Sign-up is closed on the live worker (`SIGNUP_OPEN = "0"`), and the Worker deploy token available on this box
+belongs to a different Cloudflare account than `account_id` in `wrangler.toml`, so `wrangler deploy` fails with
+"does not match any of your authenticated accounts". Sign-up therefore cannot be opened by a deploy right now.
+The D1 token still works (`CLOUDFLARE_CACHE_PURGE_API_TOKEN`), so a test user is created straight in D1 with the
+same PBKDF2 format `src/auth.ts` verifies: see "Creating a test user" below.
 
-Claude: Settings, Connectors, Add custom connector, URL `https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev/mcp`. Sign in as the test user on the page that opens, approve consent, enable the connector in a chat, and ask "what did I eat today". The callback is `https://claude.ai/api/mcp/auth_callback`, which DCR accepts because the client registers its own redirect URI.
+1. claude.ai: a browser can reach the login page and Google returns the account, but claude.ai then refuses with
+   "We couldn't verify your browser" and, on the magic-link page, an interactive "Click the TWO matching shapes"
+   CAPTCHA. Automation cannot pass it. See `proof/screenshots/claude-ai-captcha-blocks-automation.png`.
+   One human login in the shared Chrome (`~/.config/faceless-chrome`, CDP 127.0.0.1:9333) is enough; after that the
+   connector screens are ordinary pages and a runner can finish the rest.
+2. ChatGPT: `chatgpt.com` loads but every path needs an account. There is none on this box and creating one needs a
+   phone. See `proof/screenshots/chatgpt-needs-an-account.png`.
+
+## Creating a test user without a deploy
+
+`scripts/web-connector-proof.mjs` does the connector half of a login. It needs an account on the live worker.
+Generate one in the same credential format the worker uses, then insert it with the D1 token:
+
+```sh
+EMAIL=proto-web-$(date +%s)@example.com
+PASSWORD=$(openssl rand -base64 18 | tr -d '/+=' | head -c 20)
+# hash = base64(16-byte salt):base64(PBKDF2-SHA256(password, salt, 100000)), the format in src/auth.ts
+node scripts/mk-test-user.mjs > /tmp/insert.sql
+CLOUDFLARE_API_TOKEN="$(stack-key --print cloudflare CLOUDFLARE_CACHE_PURGE_API_TOKEN)" \
+  npx wrangler d1 execute calorie-mcp-proto --remote --file /tmp/insert.sql
+node scripts/web-connector-proof.mjs --callback https://claude.ai/api/mcp/auth_callback \
+  --email "$EMAIL" --password "$PASSWORD" --name claude
+```
+
+## Manual steps for proof e (needs a signed-in claude.ai and a ChatGPT account)
+
+Claude: Settings, Connectors, Add custom connector, URL `https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev/mcp`. Sign in as the test user on the page that opens, approve consent, enable the connector in a chat, and ask "what did I eat today". The callback is `https://claude.ai/api/mcp/auth_callback`, which DCR accepts because the client registers its own redirect URI. Proof g shows this exact callback receiving a code and that token adding and reading an entry.
 
 ChatGPT: Settings, Apps and connectors, enable Developer mode, create a connector with the same URL and OAuth authentication, sign in, then ask it to call `list_entries`. Its callback is `https://chatgpt.com/connector_platform_oauth_redirect` or `https://chatgpt.com/connector/oauth/{callback_id}`.
 
