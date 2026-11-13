@@ -3,10 +3,11 @@ name: Android device proof
 # Installs the debug APK on a real Android runtime (the emulator image on a GitHub-hosted
 # runner), drives the app over the WebView DevTools protocol, records the screen and keeps
 # the video. Never runs on our server.
+# Manual only. The emulator image on the GitHub-hosted runner does not boot in time
+# (two dispatches timed out waiting for boot, KVM present). Until it does, the physical
+# Android check phone (HYCI-325) is the device proof. Run this by hand from the Actions tab.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
 
 permissions:
   contents: read
@@ -41,9 +42,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       - name: Check hardware acceleration
-        run: |
-          ls -l /dev/kvm || true
-          /usr/local/lib/android/sdk/emulator/emulator -accel-check || true
+        run: ls -l /dev/kvm || true
       - run: npm ci
       - name: Build the APK against the CI worker
         run: |
