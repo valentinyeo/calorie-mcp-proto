@@ -227,6 +227,15 @@ export async function updateEntry(
   return row;
 }
 
+// Restore the original row, including its source and timestamp; never duplicate a food.
+export async function restoreEntry(db: D1Database, userId: string, id: number): Promise<Entry | null> {
+  return db.prepare(
+    `update entries set deleted_at = null, updated_at = ?
+     where id = ? and user_id = ? and deleted_at is not null
+       and deleted_at >= ? returning ${ENTRY_COLUMNS}`,
+  ).bind(now(), id, userId, new Date(Date.now() - 30_000).toISOString()).first<Entry>();
+}
+
 export async function deleteEntry(db: D1Database, userId: string, id: number): Promise<Entry> {
   const row = await db
     .prepare(

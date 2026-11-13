@@ -7,6 +7,47 @@ https://app.hypertask.ai/detail/project-2060/1273, built to `docs/spec.md`.
 
 Live worker: https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev (MCP endpoint: https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev/mcp)
 
+## Android app (SOFT-1274)
+
+The Android app is a Foldkit and Effect app in TypeScript (`app/`), wrapped as an
+APK by Capacitor. It is not Kotlin. Design reference: Home C on
+https://app.hypertask.ai/detail/project-2060/1274.
+
+- `app/src/model.ts`, `message.ts`, `update.ts`, `view.ts`: one Foldkit program (Elm style).
+- `app/src/api.ts`: the food log server client. Sign-in is email and password against the
+  existing Better Auth account; the session token comes back in `set-auth-token` and is
+  kept in Capacitor Preferences on the phone.
+- `app/src/day.ts`: pure formatting helpers (day label, entry time in the profile timezone,
+  calories left, progress) tested with `npm run app:test`.
+- `capacitor.config.ts` and `dist-app/`: the WebView wrapper and its built bundle.
+
+The WebView is served from `https://localhost`, so the Worker only allows that origin
+(plus `capacitor://localhost` and `http://localhost:5173` for local runs) through CORS.
+
+App routes use the same per-user food log as the MCP tools, authenticated by the session
+token (Bearer), never by a user id in the request:
+
+| Route | Result |
+|---|---|
+| `GET /api/app/day` | Today in the profile timezone: total, goal, left, macros, newest-first entries with source |
+| `POST /api/app/entries` | Add name, integer kcal, optional portion; source `app` |
+| `PATCH /api/app/entries/:id` | Edit name, kcal or portion |
+| `DELETE /api/app/entries/:id` | Soft delete |
+| `POST /api/app/entries/:id/restore` | Undo within 30 seconds, preserving the id, time and source |
+
+GitHub-hosted `Android app` checks (`.github/workflows/android.yml`):
+
+- `checks`: typecheck the Worker and the app, run the app tests, then drive the real local
+  Worker through OAuth/MCP and the app API with two accounts (`proof/app-api.txt`).
+- `ui`: build the same bundle the APK ships and drive it in Chromium against the real
+  Worker: sign in, today's total, a Claude-added entry, add, edit, delete and undo, plus
+  `proof/home-c.png` for the design check (`proof/app-ui.txt`).
+- `apk`: `cap add android`, `cap sync` and `./gradlew assembleDebug` on the runner.
+- `release`: every push to `main` attaches the debug APK to a GitHub release.
+
+Nothing builds on our server, and no paid service or Play publishing is used. Install the
+APK from the latest release: https://github.com/valentinyeo/calorie-mcp-proto/releases
+
 ## v1 server (IGSH-1273)
 
 Six MCP tools, every one scoped to the signed-in user:
@@ -154,8 +195,11 @@ I could not see the account's plan from the tokens. The sign-in path (PBKDF2 has
 ## Layout
 
 - `src/auth.ts` Better Auth configuration (jwt and mcp plugins, PBKDF2 hashing).
-- `src/index.ts` Worker entry: login and consent pages, `/mcp` route, everything else to Better Auth.
+- `src/index.ts` Worker entry: login and consent pages, `/mcp` route, app API routing, CORS for the app origins, everything else to Better Auth.
+- `src/app-api.ts` the Android app's day and entry routes, scoped to the signed-in session.
 - `src/pages.ts` plain HTML sign-in and consent pages.
+- `app/` the Foldkit and Effect app source, its tests and the Capacitor wrapper config.
+- `scripts/e2e-app.mjs` and `scripts/e2e-app-ui.mjs` the app's shared-log and browser proofs.
 - `migrations/` D1 schema (Better Auth tables, then `entries`).
 - `scripts/e2e.mjs` proofs b and c. `scripts/browser-sim.mjs` stands in for the browser in proof d. `scripts/gen-schema.mjs` regenerates the Better Auth migration. `scripts/proof-a.sh` proof a.
-- No GitHub Actions workflows on purpose: this is a private repo and hosted minutes are not allowed there.
+- `.github/workflows/android.yml` runs app, browser and APK checks on GitHub-hosted runners.

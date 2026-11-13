@@ -1,0 +1,151 @@
+name: Android app
+
+# Every push to main builds and releases a debug APK. Nothing here runs on our server:
+# the web bundle, the API proof and the APK all build on GitHub-hosted runners.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: app tests and shared log API
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run typecheck:app
+      - run: npm run app:test
+      - name: Shared log, sign-in and account isolation
+        shell: bash
+        run: |
+          npx wrangler d1 migrations apply calorie-mcp-proto --local
+          npx wrangler dev --ip 127.0.0.1 --port 8788 \
+            --var PUBLIC_URL:http://127.0.0.1:8788 \
+            --var SIGNUP_OPEN:1 \
+            --var AUTH_SIGNING_SECRET:ci-only-not-a-production-secret > /tmp/worker.log 2>&1 &
+          worker=$!
+          trap 'kill "$worker" 2>/dev/null || true' EXIT
+          node --input-type=module -e 'for(let i=0;i<60;i++){try{if((await fetch("http://127.0.0.1:8788/health")).ok)process.exit(0)}catch{} await new Promise(r=>setTimeout(r,1000))}process.exit(1)'
+          BASE=http://127.0.0.1:8788 node scripts/e2e-app.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: app-api-proof
+          path: proof/app-api.txt
+          if-no-files-found: warn
+
+  ui:
+    name: app UI proof
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Build the app the APK ships, against the CI worker
+        run: VITE_API_BASE=http://127.0.0.1:8788 npm run app:build
+      - name: Sign in, read today, add, edit, delete and undo in a real browser
+        shell: bash
+        run: |
+          npx wrangler d1 migrations apply calorie-mcp-proto --local
+          npx wrangler dev --ip 127.0.0.1 --port 8788 \
+            --var PUBLIC_URL:http://127.0.0.1:8788 \
+            --var SIGNUP_OPEN:1 \
+            --var AUTH_SIGNING_SECRET:ci-only-not-a-production-secret > /tmp/worker.log 2>&1 &
+          worker=$!
+          npx vite preview --config app/vite.config.ts --port 5173 --strictPort > /tmp/preview.log 2>&1 &
+          preview=$!
+          trap 'kill "$worker" "$preview" 2>/dev/null || true' EXIT
+          node --input-type=module -e '
+            const wait = async (url) => { for (let i = 0; i < 60; i++) { try { if ((await fetch(url)).ok) return } catch {} await new Promise((r) => setTimeout(r, 1000)) } process.exit(1) }
+            await wait("http://127.0.0.1:8788/health")
+            await wait("http://localhost:5173/")
+          '
+          BASE=http://127.0.0.1:8788 APP=http://localhost:5173 node scripts/e2e-app-ui.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: app-ui-proof
+          path: |
+            proof/app-ui.txt
+            proof/home-c*.png
+          if-no-files-found: warn
+
+  apk:
+    name: debug APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+      - run: npm ci
+      - run: npm run app:build
+      - name: Wrap the web bundle in an Android project
+        run: |
+          npx cap add android
+          npx cap sync android
+      - name: Build the debug APK
+        working-directory: android
+        run: ./gradlew --no-daemon assembleDebug
+      - name: Name the APK after the commit
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk "calorie-tracker-${GITHUB_SHA::7}-debug.apk"
+          sha256sum "calorie-tracker-${GITHUB_SHA::7}-debug.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: calorie-tracker-debug
+          path: calorie-tracker-*-debug.apk
+
+  release:
+    name: release the APK
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [checks, ui, apk]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: calorie-tracker-debug
+          path: dist
+      - name: Attach the APK to a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          apk=$(ls dist/*.apk)
+          tag="android-${GITHUB_RUN_NUMBER}"
+          gh release create "$tag" "$apk" \
+            --target "$GITHUB_SHA" \
+            --title "Calorie Tracker Android debug APK ${GITHUB_RUN_NUMBER}" \
+            --notes "Debug APK from commit ${GITHUB_SHA}."

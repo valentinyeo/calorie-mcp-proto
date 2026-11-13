@@ -1,7 +1,10 @@
 node_modules/
+node_modules
 .wrangler/
 .dev.vars
 .env
 *.log
-node_modules
-.unlazy/IGSH-1273/hook-state.json
+dist-app/
+# Capacitor generates the Android project from the web bundle on CI.
+android/
+.unlazy/

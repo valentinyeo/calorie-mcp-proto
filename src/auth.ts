@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { jwt } from "better-auth/plugins";
+import { bearer, jwt } from "better-auth/plugins";
 import { mcp } from "@better-auth/mcp";
 
 export interface Env {
@@ -15,6 +15,10 @@ export interface Env {
 
 export const MCP_PATH = "/mcp";
 export const MCP_SCOPES = ["mcp:read", "mcp:write", "offline_access"];
+
+// The Android WebView serves the app from https://localhost and calls the Worker with a
+// Bearer session token, so those origins are trusted and allowed through CORS.
+export const APP_ORIGINS = ["https://localhost", "capacitor://localhost", "http://localhost:5173"];
 
 // Workers Free allows ~10 ms CPU per request. Better Auth's default scrypt hash is
 // pure JS and far over that. Web Crypto PBKDF2 runs natively, so use it instead.
@@ -49,6 +53,7 @@ export function createAuth(env: Env) {
     secret: env.AUTH_SIGNING_SECRET,
     baseURL: env.PUBLIC_URL,
     basePath: "/",
+    trustedOrigins: APP_ORIGINS,
     ...(google ? { socialProviders: { google } } : {}),
     emailAndPassword: {
       enabled: true,
@@ -57,6 +62,9 @@ export function createAuth(env: Env) {
     },
     plugins: [
       jwt(),
+      // Issues a session token in set-auth-token on sign-in and accepts it as a Bearer
+      // token afterwards, which is what the Android WebView stores and sends.
+      bearer(),
       mcp({
         loginPage: "/sign-in",
         consentPage: "/consent",
@@ -70,3 +78,5 @@ export function createAuth(env: Env) {
     ],
   });
 }
+
+export type Auth = ReturnType<typeof createAuth>;

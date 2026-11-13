@@ -3,22 +3,34 @@
   "private": true,
   "type": "module",
   "version": "0.0.1",
-  "dependencies": {
-    "@better-auth/mcp": "^1.7.14",
-    "@modelcontextprotocol/sdk": "^1.32.2",
-    "better-auth": "^1.7.14",
-    "zod": "^4.6.7"
-  },
-  "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261030.1",
-    "typescript": "^7.0.2",
-    "wrangler": "^4.156.0"
-  },
   "scripts": {
     "e2e": "node scripts/e2e-v1.mjs",
     "typecheck": "tsc --noEmit",
+    "typecheck:app": "tsc --noEmit -p app/tsconfig.json",
+    "app:test": "node --test app/test/*.test.ts",
+    "app:build": "vite build --config app/vite.config.ts",
+    "app:android": "npx cap add android && npx cap sync android",
     "deploy": "wrangler deploy",
     "migrate:local": "wrangler d1 migrations apply calorie-mcp-proto --local",
     "migrate": "wrangler d1 migrations apply calorie-mcp-proto --remote"
+  },
+  "dependencies": {
+    "@better-auth/mcp": "^1.7.14",
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/preferences": "^8.0.1",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "better-auth": "^1.7.14",
+    "effect": "^4.1.4",
+    "foldkit": "^0.170.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.2",
+    "@cloudflare/workers-types": "^5.20261030.1",
+    "playwright": "^1.65.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "wrangler": "^4.156.0"
   }
 }
