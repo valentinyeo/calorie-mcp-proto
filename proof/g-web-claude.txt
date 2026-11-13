@@ -1,0 +1,13 @@
+SOFT-1281 web connector proof. Base https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev. Callback https://claude.ai/api/mcp/auth_callback. Run at 2026-11-13T00:42:42.263Z.
+PASS: dynamic client registration accepts the connector callback -> {"redirect_uris":["https://claude.ai/api/mcp/auth_callback"]}
+PASS: authorize sends the connector to the server sign-in page -> "/sign-in"
+PASS: sign-in form submitted
+PASS: signed-in user reaches the consent page -> "/consent"
+PASS: consent approved
+PASS: connector callback received an authorization code -> "https://claude.ai/api/mcp/auth_callback"
+PASS: callback carried the same state -> "c1a2a89f19bd51c2"
+PASS: authorization code exchanged for an access token -> 200
+PASS: add_entry wrote the entry through the connector token -> {"id":16,"eaten_at":"2026-11-13T00:42:59.479Z","local_date":"2026-11-13","name":"Web connector test 2026-11-13T00:42Z","kcal":412,"protein_g":null,"carbs_g":null,"fat_g":null,"portion_text":"one bowl","source":"mcp","client_name":"node"}
+PASS: get_day reads the same entry back -> {"entries":["Web connector test 2026-11-13T00:42Z"]}
+
+FAILURES: 0

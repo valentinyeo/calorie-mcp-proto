@@ -279,7 +279,8 @@ log(`Inspector run: ${inspLog.length} calls, failures so far ${failures}`);
 // Session-scoped token is what Inspector gets for the CI-style tools/list check.
 writeFileSync("/tmp/igsh1273-token", a.token);
 
+// Summary goes into the proof file, so the artifact itself shows green or red.
+log(`\n${failures === 0 ? "PASS" : "FAIL"}: ${failures} failing check(s). Base ${BASE}`);
 mkdirSync("proof", { recursive: true });
 writeFileSync(PROOF, redact(lines.join("\n")) + "\n");
-log(`\n${failures === 0 ? "PASS" : "FAIL"}: ${failures} failing check(s). Base ${BASE}`);
 process.exit(failures === 0 ? 0 : 1);

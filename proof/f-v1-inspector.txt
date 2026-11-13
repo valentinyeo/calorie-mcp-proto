@@ -253,7 +253,7 @@ exit=0
   "content": [
     {
       "type": "text",
-      "text": "{\n  \"entry\": {\n    \"id\": 11,\n    \"eaten_at\": \"2026-11-11T13:16:02.423Z\",\n    \"local_date\": \"2026-11-11\",\n    \"name\": \"Porridge\",\n    \"kcal\": 350,\n    \"protein_g\": null,\n    \"carbs_g\": null,\n    \"fat_g\": null,\n    \"portion_text\": \"1 bowl\",\n    \"source\": \"mcp\",\n    \"client_name\": \"mcp-inspector\"\n  },\n  \"day\": {\n    \"date\": \"2026-11-11\",\n    \"goal_kcal\": 1800,\n    \"consumed_kcal\": 350,\n    \"remaining_kcal\": 1450,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0\n  }\n}"
+      "text": "{\n  \"entry\": {\n    \"id\": 15,\n    \"eaten_at\": \"2026-11-11T13:25:26.703Z\",\n    \"local_date\": \"2026-11-11\",\n    \"name\": \"Porridge\",\n    \"kcal\": 350,\n    \"protein_g\": null,\n    \"carbs_g\": null,\n    \"fat_g\": null,\n    \"portion_text\": \"1 bowl\",\n    \"source\": \"mcp\",\n    \"client_name\": \"mcp-inspector\"\n  },\n  \"day\": {\n    \"date\": \"2026-11-11\",\n    \"goal_kcal\": 1800,\n    \"consumed_kcal\": 350,\n    \"remaining_kcal\": 1450,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0\n  }\n}"
     }
   ]
 }
@@ -265,7 +265,7 @@ exit=0
   "content": [
     {
       "type": "text",
-      "text": "{\n  \"date\": \"2026-11-11\",\n  \"goal_kcal\": 1800,\n  \"consumed_kcal\": 350,\n  \"remaining_kcal\": 1450,\n  \"protein_g\": 0,\n  \"carbs_g\": 0,\n  \"fat_g\": 0,\n  \"entries\": [\n    {\n      \"id\": 11,\n      \"eaten_at\": \"2026-11-11T13:16:02.423Z\",\n      \"local_date\": \"2026-11-11\",\n      \"name\": \"Porridge\",\n      \"kcal\": 350,\n      \"protein_g\": null,\n      \"carbs_g\": null,\n      \"fat_g\": null,\n      \"portion_text\": \"1 bowl\",\n      \"source\": \"mcp\",\n      \"client_name\": \"mcp-inspector\"\n    }\n  ]\n}"
+      "text": "{\n  \"date\": \"2026-11-11\",\n  \"goal_kcal\": 1800,\n  \"consumed_kcal\": 350,\n  \"remaining_kcal\": 1450,\n  \"protein_g\": 0,\n  \"carbs_g\": 0,\n  \"fat_g\": 0,\n  \"entries\": [\n    {\n      \"id\": 15,\n      \"eaten_at\": \"2026-11-11T13:25:26.703Z\",\n      \"local_date\": \"2026-11-11\",\n      \"name\": \"Porridge\",\n      \"kcal\": 350,\n      \"protein_g\": null,\n      \"carbs_g\": null,\n      \"fat_g\": null,\n      \"portion_text\": \"1 bowl\",\n      \"source\": \"mcp\",\n      \"client_name\": \"mcp-inspector\"\n    }\n  ]\n}"
     }
   ]
 }
@@ -277,19 +277,19 @@ exit=0
   "content": [
     {
       "type": "text",
-      "text": "{\n  \"from\": \"2026-11-11\",\n  \"to\": \"2026-11-11\",\n  \"count\": 1,\n  \"entries\": [\n    {\n      \"id\": 11,\n      \"eaten_at\": \"2026-11-11T13:16:02.423Z\",\n      \"local_date\": \"2026-11-11\",\n      \"name\": \"Porridge\",\n      \"kcal\": 350,\n      \"protein_g\": null,\n      \"carbs_g\": null,\n      \"fat_g\": null,\n      \"portion_text\": \"1 bowl\",\n      \"source\": \"mcp\",\n      \"client_name\": \"mcp-inspector\"\n    }\n  ]\n}"
+      "text": "{\n  \"from\": \"2026-11-11\",\n  \"to\": \"2026-11-11\",\n  \"count\": 1,\n  \"entries\": [\n    {\n      \"id\": 15,\n      \"eaten_at\": \"2026-11-11T13:25:26.703Z\",\n      \"local_date\": \"2026-11-11\",\n      \"name\": \"Porridge\",\n      \"kcal\": 350,\n      \"protein_g\": null,\n      \"carbs_g\": null,\n      \"fat_g\": null,\n      \"portion_text\": \"1 bowl\",\n      \"source\": \"mcp\",\n      \"client_name\": \"mcp-inspector\"\n    }\n  ]\n}"
     }
   ]
 }
 
 
-$ npx @modelcontextprotocol/inspector --cli https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev/mcp --transport http --header "Authorization: Bearer <redacted>" --method tools/call --tool-name update_entry --tool-arg id=11 --tool-arg kcal=420
+$ npx @modelcontextprotocol/inspector --cli https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev/mcp --transport http --header "Authorization: Bearer <redacted>" --method tools/call --tool-name update_entry --tool-arg id=15 --tool-arg kcal=420
 exit=0
 {
   "content": [
     {
       "type": "text",
-      "text": "{\n  \"entry\": {\n    \"id\": 11,\n    \"eaten_at\": \"2026-11-11T13:16:02.423Z\",\n    \"local_date\": \"2026-11-11\",\n    \"name\": \"Porridge\",\n    \"kcal\": 420,\n    \"protein_g\": null,\n    \"carbs_g\": null,\n    \"fat_g\": null,\n    \"portion_text\": \"1 bowl\",\n    \"source\": \"mcp\",\n    \"client_name\": \"mcp-inspector\"\n  },\n  \"day\": {\n    \"date\": \"2026-11-11\",\n    \"goal_kcal\": 1800,\n    \"consumed_kcal\": 420,\n    \"remaining_kcal\": 1380,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0\n  }\n}"
+      "text": "{\n  \"entry\": {\n    \"id\": 15,\n    \"eaten_at\": \"2026-11-11T13:25:26.703Z\",\n    \"local_date\": \"2026-11-11\",\n    \"name\": \"Porridge\",\n    \"kcal\": 420,\n    \"protein_g\": null,\n    \"carbs_g\": null,\n    \"fat_g\": null,\n    \"portion_text\": \"1 bowl\",\n    \"source\": \"mcp\",\n    \"client_name\": \"mcp-inspector\"\n  },\n  \"day\": {\n    \"date\": \"2026-11-11\",\n    \"goal_kcal\": 1800,\n    \"consumed_kcal\": 420,\n    \"remaining_kcal\": 1380,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0\n  }\n}"
     }
   ]
 }
@@ -307,13 +307,13 @@ exit=0
 }
 
 
-$ npx @modelcontextprotocol/inspector --cli https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev/mcp --transport http --header "Authorization: Bearer <redacted>" --method tools/call --tool-name delete_entry --tool-arg id=11
+$ npx @modelcontextprotocol/inspector --cli https://calorie-mcp-proto.ancient-glitter-9ac9.workers.dev/mcp --transport http --header "Authorization: Bearer <redacted>" --method tools/call --tool-name delete_entry --tool-arg id=15
 exit=0
 {
   "content": [
     {
       "type": "text",
-      "text": "{\n  \"ok\": true,\n  \"deleted\": {\n    \"id\": 11,\n    \"eaten_at\": \"2026-11-11T13:16:02.423Z\",\n    \"local_date\": \"2026-11-11\",\n    \"name\": \"Porridge\",\n    \"kcal\": 420,\n    \"protein_g\": null,\n    \"carbs_g\": null,\n    \"fat_g\": null,\n    \"portion_text\": \"1 bowl\",\n    \"source\": \"mcp\",\n    \"client_name\": \"mcp-inspector\"\n  },\n  \"day\": {\n    \"date\": \"2026-11-11\",\n    \"goal_kcal\": 2100,\n    \"consumed_kcal\": 0,\n    \"remaining_kcal\": 2100,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0\n  }\n}"
+      "text": "{\n  \"ok\": true,\n  \"deleted\": {\n    \"id\": 15,\n    \"eaten_at\": \"2026-11-11T13:25:26.703Z\",\n    \"local_date\": \"2026-11-11\",\n    \"name\": \"Porridge\",\n    \"kcal\": 420,\n    \"protein_g\": null,\n    \"carbs_g\": null,\n    \"fat_g\": null,\n    \"portion_text\": \"1 bowl\",\n    \"source\": \"mcp\",\n    \"client_name\": \"mcp-inspector\"\n  },\n  \"day\": {\n    \"date\": \"2026-11-11\",\n    \"goal_kcal\": 2100,\n    \"consumed_kcal\": 0,\n    \"remaining_kcal\": 2100,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0\n  }\n}"
     }
   ]
 }
