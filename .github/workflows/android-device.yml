@@ -56,20 +56,7 @@ jobs:
           target: google_apis
           disable-animations: true
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: |
-            set -e
-            npx wrangler d1 migrations apply calorie-mcp-proto --local
-            npx wrangler dev --ip 0.0.0.0 --port 8788 \
-              --var PUBLIC_URL:http://127.0.0.1:8788 \
-              --var SIGNUP_OPEN:1 \
-              --var AUTH_SIGNING_SECRET:ci-only-not-a-production-secret > /tmp/worker.log 2>&1 &
-            worker=$!
-            trap 'kill "$worker" 2>/dev/null || true' EXIT
-            node --input-type=module -e 'for(let i=0;i<60;i++){try{if((await fetch("http://127.0.0.1:8788/health")).ok)process.exit(0)}catch{} await new Promise(r=>setTimeout(r,1000))}process.exit(1)'
-            adb install -r android/app/build/outputs/apk/debug/app-debug.apk
-            adb shell am start -n dev.calorie.tracker/.MainActivity
-            sleep 12
-            node scripts/drive-device.mjs
+          script: bash scripts/device-proof.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with:
