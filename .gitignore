@@ -1,11 +1,9 @@
 node_modules/
-.unlazy/
-android/.gradle/
-android/.kotlin/
-android/**/build/
-android/local.properties
 .wrangler/
 .dev.vars
 .env
 *.log
-node_modules
+dist-app/
+# Capacitor generates the Android project from the web bundle on CI.
+android/
+.unlazy/
