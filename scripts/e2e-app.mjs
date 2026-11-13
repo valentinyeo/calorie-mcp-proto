@@ -89,13 +89,13 @@ check((await api(null, "entries", "POST", { name: "No", kcal: 1 })).status === 4
 
 const fromMcp = await tool("add_entry", { name: "Porridge from MCP", kcal: 350, portion_text: "1 bowl" });
 let result = await api(aToken, "day");
-check(result.status === 200 && result.body.entries[0].id === fromMcp.entry.id && result.body.consumed_kcal === 350,
-  "an entry added from Claude (MCP) shows on the app's home day", { total: result.body.consumed_kcal });
-check(result.body.timezone === "Europe/London" && result.body.remaining_kcal === 1650,
+check(result.status === 200 && result.body.day.entries[0].id === fromMcp.entry.id && result.body.day.consumed_kcal === 350,
+  "an entry added from Claude (MCP) shows on the app's home day", { total: result.body.day.consumed_kcal });
+check(result.body.day.timezone === "Europe/London" && result.body.day.remaining_kcal === 1650,
   "app home gets today's goal and calories left from the server");
-check(result.body.entries[0].source === "mcp" && result.body.entries[0].client_name !== null,
+check(result.body.day.entries[0].source === "mcp" && result.body.day.entries[0].client_name !== null,
   "the MCP entry keeps its source and client label");
-check(result.body.entries[0].portion_text === "1 bowl", "the portion is shown with the entry");
+check(result.body.day.entries[0].portion_text === "1 bowl", "the portion is shown with the entry");
 
 const added = await api(aToken, "entries", "POST", { name: "Banana", kcal: 105, portion_text: "1 medium" });
 const foodId = added.body.entry?.id;
@@ -104,7 +104,7 @@ check(added.status === 201 && added.body.day.entries[0].id === foodId && added.b
 for (const bad of [{ name: "", kcal: 10 }, { name: "Food", kcal: -1 }, { name: "Food", kcal: 1.2 }, { name: "Food", kcal: 20001 }, { name: "Food", kcal: 1, user_id: "other" }]) {
   check((await api(aToken, "entries", "POST", bad)).status === 400, "invalid food rejected: " + JSON.stringify(bad));
 }
-check((await api(bToken, "day")).body.entries.length === 0, "another account cannot read the first account's log");
+check((await api(bToken, "day")).body.day.entries.length === 0, "another account cannot read the first account's log");
 check((await api(bToken, `entries/${foodId}`, "PATCH", { kcal: 1 })).status === 404, "cross-account edit denied");
 check((await api(bToken, `entries/${foodId}`, "DELETE")).status === 404, "cross-account delete denied");
 
@@ -128,8 +128,8 @@ check(shared.entries.length === 2 && shared.consumed_kcal === 505, "MCP sees the
 
 await tool("set_goal", { kcal: 2100, timezone: "Pacific/Kiritimati" });
 result = await api(aToken, "day");
-check(result.body.timezone === "Pacific/Kiritimati" && result.body.goal_kcal === 2100
-  && result.body.date === new Intl.DateTimeFormat("en-CA", { timeZone: "Pacific/Kiritimati", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()),
+check(result.body.day.timezone === "Pacific/Kiritimati" && result.body.day.goal_kcal === 2100
+  && result.body.day.date === new Intl.DateTimeFormat("en-CA", { timeZone: "Pacific/Kiritimati", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()),
   "app today follows the profile timezone, not the device or UTC");
 
 mkdirSync("proof", { recursive: true });
