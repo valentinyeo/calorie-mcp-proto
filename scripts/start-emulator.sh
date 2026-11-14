@@ -29,6 +29,15 @@ echo "no" | avdmanager create avd -n "$AVD" -k "$image" --force -d pixel_5
 
 echo "== hardware acceleration =="
 ls -l /dev/kvm || true
+qemu="$SDK/emulator/qemu/linux-x86_64/qemu-system-x86_64"
+if [ -x "$qemu" ]; then
+  missing="$(ldd "$qemu" | grep 'not found' || true)"
+  if [ -n "$missing" ]; then
+    echo "::error::qemu is missing shared libraries"
+    echo "$missing"
+    exit 1
+  fi
+fi
 "$SDK/emulator/emulator" -accel-check || true
 "$SDK/emulator/emulator" -version | head -2
 echo "== emulator: API ${API}, image ${image}, gpu ${GPU} =="
