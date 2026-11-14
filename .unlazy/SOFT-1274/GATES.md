@@ -10,18 +10,19 @@ GitHub Actions builds a debug APK on every push to main, attaches it to a GitHub
 and a device proof installs and opens the APK, shows today's calories from the server, shows
 an entry added by Claude, and records the screen.
 
-Everything below was already delivered by the merged PRs #2 to #6 on 2026-11-13. What is
-left this run is the last Done-when: the APK on an Android runtime with a screen recording.
+Everything below was already delivered by the merged PRs #2 to #6 on 2026-11-13, and main is
+released: https://github.com/valentinyeo/calorie-mcp-proto/releases/tag/android-21 (commit
+4ace5b5). What is left is the one open Done-when: the APK on an Android device with a screen
+recording. Two routes, both blocked on another ticket.
 
-- [ ] G1: The emulator boots on a GitHub-hosted runner (API 34, KVM) inside the device proof workflow.
-  EVIDENCE: pending.
-- [ ] G2: The device proof drives the APK: installs, opens, signs in, home shows today's calories from the server, the Claude entry shows with its source, add, delete and undo pass.
-  EVIDENCE: pending. proof/app-device.txt with all PASS.
-- [ ] G3: The screen recording and home screenshot from the device run are attached to the ticket.
-  EVIDENCE: pending. proof/device-demo.mp4 and proof/device-home.png.
-- [ ] G4: The PR is merged to main with its checks green.
-  EVIDENCE: pending.
-- [ ] G5: A push to main releases the APK for the merge commit and the release link is on the ticket.
-  EVIDENCE: pending.
-- [ ] G6: Ticket moved to Done with the proof.
-  EVIDENCE: pending.
+- [ ] G1: A device proof installs and opens the APK: today's calories from the live server, the Claude entry with its source, add, delete and undo, screen recording kept.
+  EVIDENCE: blocked. Emulator route in PR #7 acb2854 now installs the emulator's shared libraries (the 09:49 run died on libpulse.so.0) but cannot run: GitHub refuses to start any job, HYCI-458. Phone route: the check phone is on adb again but locked, HYCI-460.
+- [ ] G2: The screen recording and home screenshot from the device run are attached to the ticket.
+  EVIDENCE: pending G1.
+- [ ] G3: PR #7 merged with its checks green.
+  EVIDENCE: draft, impossible while GitHub starts no jobs, HYCI-458.
+- [ ] G4: Ticket moved to Done with the proof.
+  EVIDENCE: pending G1 and G3.
+
+Recheck: when HYCI-458 clears rerun Android device proof on soft-1274-emulator-boot; when
+HYCI-460 clears run the phone proof against the android-21 APK.
