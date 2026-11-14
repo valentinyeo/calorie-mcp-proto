@@ -26,6 +26,8 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - name: Photo sample is 100 plates with known calories
+        run: node scripts/photo-eval-check-manifest.mjs
       - run: npm ci
       - run: npm run typecheck
       - run: npm run typecheck:app
