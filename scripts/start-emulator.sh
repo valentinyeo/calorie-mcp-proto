@@ -11,7 +11,10 @@ SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:?ANDROID_HOME is not set}}"
 API="${API_LEVEL:-34}"
 GPU="${EMULATOR_GPU:-swiftshader}"
 AVD=ci-phone
-LOG=/tmp/emulator.log
+# Inside the checkout on purpose: upload-artifact cannot scope an absolute path outside the
+# workspace, so the log has to live somewhere it can pick up without scanning the filesystem.
+LOG="${EMULATOR_LOG:-proof/emulator.log}"
+mkdir -p "$(dirname "$LOG")"
 WAIT_SECONDS="${EMULATOR_BOOT_TIMEOUT:-900}"
 
 export ANDROID_SDK_ROOT="$SDK"
@@ -39,7 +42,9 @@ if [ -x "$qemu" ]; then
   fi
 fi
 "$SDK/emulator/emulator" -accel-check || true
-"$SDK/emulator/emulator" -version | head -2
+# No `| head` here: under `set -o pipefail` the early close sends the emulator SIGPIPE
+# and fails the step before the boot ever starts.
+"$SDK/emulator/emulator" -version 2>&1 | sed -n '1,2p' || true
 echo "== emulator: API ${API}, image ${image}, gpu ${GPU} =="
 
 "$SDK/emulator/emulator" -avd "$AVD" \

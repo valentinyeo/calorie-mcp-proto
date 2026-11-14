@@ -72,5 +72,5 @@ jobs:
             proof/app-device.txt
             proof/device-home*.png
             proof/device-demo.mp4
-            /tmp/emulator.log
+            proof/emulator.log
           if-no-files-found: warn
