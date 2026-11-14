@@ -1,5 +1,6 @@
 {
-  "note": "1x1 png, second call, same prompt as the plate scorer",
+  "note": "1x1 png, second call, same prompt as the plate scorer. photo_input_tokens is the 640x480 plate minus that 1x1 on Sonnet, every plate. One Haiku plate cache-read minus the 1x1 cache-read matched it.",
+  "photo_input_tokens": 413,
   "models": {
     "claude-haiku-5-5": {
       "input_tokens": 6,
