@@ -8,3 +8,4 @@ dist-app/
 # Capacitor generates the Android project from the web bundle on CI.
 android/
 .unlazy/
+eval/photos/

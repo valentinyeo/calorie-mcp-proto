@@ -1,0 +1,510 @@
+{
+  "source": "Nutrition5k cafe1 overhead RGB (Google Research, CC BY 4.0)",
+  "source_url": "https://github.com/google-research-datasets/Nutrition5k",
+  "seed": 1277,
+  "kcal_min_included": 50,
+  "count": 100,
+  "label": "total_calories for the plate, from dish_metadata_cafe1.csv",
+  "dishes": [
+    {
+      "id": "dish_1558375506",
+      "kcal": 73.84,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1558375506/rgb.png"
+    },
+    {
+      "id": "dish_1558381206",
+      "kcal": 342.388,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1558381206/rgb.png"
+    },
+    {
+      "id": "dish_1558637247",
+      "kcal": 117.771,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1558637247/rgb.png"
+    },
+    {
+      "id": "dish_1558641164",
+      "kcal": 80.08,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1558641164/rgb.png"
+    },
+    {
+      "id": "dish_1558723568",
+      "kcal": 179.619,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1558723568/rgb.png"
+    },
+    {
+      "id": "dish_1559244305",
+      "kcal": 113.0664,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1559244305/rgb.png"
+    },
+    {
+      "id": "dish_1559678330",
+      "kcal": 169.6941,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1559678330/rgb.png"
+    },
+    {
+      "id": "dish_1559843222",
+      "kcal": 111.27,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1559843222/rgb.png"
+    },
+    {
+      "id": "dish_1559844479",
+      "kcal": 83.45,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1559844479/rgb.png"
+    },
+    {
+      "id": "dish_1559850338",
+      "kcal": 307.117,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1559850338/rgb.png"
+    },
+    {
+      "id": "dish_1559925037",
+      "kcal": 54.1,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1559925037/rgb.png"
+    },
+    {
+      "id": "dish_1560356355",
+      "kcal": 301.6069,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1560356355/rgb.png"
+    },
+    {
+      "id": "dish_1560443537",
+      "kcal": 237.64,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1560443537/rgb.png"
+    },
+    {
+      "id": "dish_1560444570",
+      "kcal": 168.72,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1560444570/rgb.png"
+    },
+    {
+      "id": "dish_1560444616",
+      "kcal": 265.871,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1560444616/rgb.png"
+    },
+    {
+      "id": "dish_1560444701",
+      "kcal": 51.0,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1560444701/rgb.png"
+    },
+    {
+      "id": "dish_1560444756",
+      "kcal": 150.78,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1560444756/rgb.png"
+    },
+    {
+      "id": "dish_1560798928",
+      "kcal": 485.0382,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1560798928/rgb.png"
+    },
+    {
+      "id": "dish_1560801883",
+      "kcal": 512.1113,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1560801883/rgb.png"
+    },
+    {
+      "id": "dish_1560802149",
+      "kcal": 365.5175,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1560802149/rgb.png"
+    },
+    {
+      "id": "dish_1560974009",
+      "kcal": 482.9831,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1560974009/rgb.png"
+    },
+    {
+      "id": "dish_1561060503",
+      "kcal": 145.309,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1561060503/rgb.png"
+    },
+    {
+      "id": "dish_1561146781",
+      "kcal": 300.1,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1561146781/rgb.png"
+    },
+    {
+      "id": "dish_1561392410",
+      "kcal": 187.296,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1561392410/rgb.png"
+    },
+    {
+      "id": "dish_1561393741",
+      "kcal": 188.83,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1561393741/rgb.png"
+    },
+    {
+      "id": "dish_1561405836",
+      "kcal": 82.429,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1561405836/rgb.png"
+    },
+    {
+      "id": "dish_1561575506",
+      "kcal": 562.0433,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1561575506/rgb.png"
+    },
+    {
+      "id": "dish_1561576320",
+      "kcal": 494.7975,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1561576320/rgb.png"
+    },
+    {
+      "id": "dish_1561665626",
+      "kcal": 51.989,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1561665626/rgb.png"
+    },
+    {
+      "id": "dish_1561748862",
+      "kcal": 154.7729,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1561748862/rgb.png"
+    },
+    {
+      "id": "dish_1562009098",
+      "kcal": 70.08,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562009098/rgb.png"
+    },
+    {
+      "id": "dish_1562010929",
+      "kcal": 457.2658,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562010929/rgb.png"
+    },
+    {
+      "id": "dish_1562086067",
+      "kcal": 178.178,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562086067/rgb.png"
+    },
+    {
+      "id": "dish_1562094877",
+      "kcal": 234.5761,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562094877/rgb.png"
+    },
+    {
+      "id": "dish_1562097653",
+      "kcal": 116.1655,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562097653/rgb.png"
+    },
+    {
+      "id": "dish_1562603626",
+      "kcal": 201.7595,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562603626/rgb.png"
+    },
+    {
+      "id": "dish_1562614980",
+      "kcal": 566.1461,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562614980/rgb.png"
+    },
+    {
+      "id": "dish_1562617939",
+      "kcal": 234.9661,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562617939/rgb.png"
+    },
+    {
+      "id": "dish_1562618000",
+      "kcal": 685.9939,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562618000/rgb.png"
+    },
+    {
+      "id": "dish_1562774180",
+      "kcal": 164.0836,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562774180/rgb.png"
+    },
+    {
+      "id": "dish_1562774206",
+      "kcal": 298.7636,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562774206/rgb.png"
+    },
+    {
+      "id": "dish_1562784242",
+      "kcal": 85.12,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562784242/rgb.png"
+    },
+    {
+      "id": "dish_1562861125",
+      "kcal": 190.8079,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562861125/rgb.png"
+    },
+    {
+      "id": "dish_1562876674",
+      "kcal": 289.1926,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562876674/rgb.png"
+    },
+    {
+      "id": "dish_1562876756",
+      "kcal": 354.5969,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562876756/rgb.png"
+    },
+    {
+      "id": "dish_1562950057",
+      "kcal": 320.1,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562950057/rgb.png"
+    },
+    {
+      "id": "dish_1562956510",
+      "kcal": 221.1671,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562956510/rgb.png"
+    },
+    {
+      "id": "dish_1562963517",
+      "kcal": 552.6484,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1562963517/rgb.png"
+    },
+    {
+      "id": "dish_1563207406",
+      "kcal": 372.07,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1563207406/rgb.png"
+    },
+    {
+      "id": "dish_1563295400",
+      "kcal": 402.9848,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1563295400/rgb.png"
+    },
+    {
+      "id": "dish_1563304333",
+      "kcal": 451.2357,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1563304333/rgb.png"
+    },
+    {
+      "id": "dish_1563309285",
+      "kcal": 59.45,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1563309285/rgb.png"
+    },
+    {
+      "id": "dish_1563389153",
+      "kcal": 346.4545,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1563389153/rgb.png"
+    },
+    {
+      "id": "dish_1563477701",
+      "kcal": 179.4246,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1563477701/rgb.png"
+    },
+    {
+      "id": "dish_1563551006",
+      "kcal": 357.6692,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1563551006/rgb.png"
+    },
+    {
+      "id": "dish_1563555543",
+      "kcal": 268.38,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1563555543/rgb.png"
+    },
+    {
+      "id": "dish_1563812615",
+      "kcal": 402.7841,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1563812615/rgb.png"
+    },
+    {
+      "id": "dish_1563897369",
+      "kcal": 117.0137,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1563897369/rgb.png"
+    },
+    {
+      "id": "dish_1563898084",
+      "kcal": 419.4934,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1563898084/rgb.png"
+    },
+    {
+      "id": "dish_1563898880",
+      "kcal": 643.6184,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1563898880/rgb.png"
+    },
+    {
+      "id": "dish_1563900172",
+      "kcal": 236.6366,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1563900172/rgb.png"
+    },
+    {
+      "id": "dish_1563909580",
+      "kcal": 544.3115,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1563909580/rgb.png"
+    },
+    {
+      "id": "dish_1564171970",
+      "kcal": 498.8211,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1564171970/rgb.png"
+    },
+    {
+      "id": "dish_1564428102",
+      "kcal": 133.2197,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1564428102/rgb.png"
+    },
+    {
+      "id": "dish_1564432191",
+      "kcal": 261.0284,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1564432191/rgb.png"
+    },
+    {
+      "id": "dish_1564432238",
+      "kcal": 455.3879,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1564432238/rgb.png"
+    },
+    {
+      "id": "dish_1564590352",
+      "kcal": 497.9158,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1564590352/rgb.png"
+    },
+    {
+      "id": "dish_1564773976",
+      "kcal": 516.0895,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1564773976/rgb.png"
+    },
+    {
+      "id": "dish_1565030350",
+      "kcal": 62.5857,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1565030350/rgb.png"
+    },
+    {
+      "id": "dish_1565036788",
+      "kcal": 186.13,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1565036788/rgb.png"
+    },
+    {
+      "id": "dish_1565119439",
+      "kcal": 465.4122,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1565119439/rgb.png"
+    },
+    {
+      "id": "dish_1565119669",
+      "kcal": 55.965,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1565119669/rgb.png"
+    },
+    {
+      "id": "dish_1565123881",
+      "kcal": 406.8217,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1565123881/rgb.png"
+    },
+    {
+      "id": "dish_1565711083",
+      "kcal": 178.53,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1565711083/rgb.png"
+    },
+    {
+      "id": "dish_1565725123",
+      "kcal": 430.27,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1565725123/rgb.png"
+    },
+    {
+      "id": "dish_1565727875",
+      "kcal": 485.674,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1565727875/rgb.png"
+    },
+    {
+      "id": "dish_1565727921",
+      "kcal": 768.554,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1565727921/rgb.png"
+    },
+    {
+      "id": "dish_1565799597",
+      "kcal": 258.3117,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1565799597/rgb.png"
+    },
+    {
+      "id": "dish_1565811091",
+      "kcal": 504.4,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1565811091/rgb.png"
+    },
+    {
+      "id": "dish_1565898128",
+      "kcal": 209.0308,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1565898128/rgb.png"
+    },
+    {
+      "id": "dish_1565986702",
+      "kcal": 211.344,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1565986702/rgb.png"
+    },
+    {
+      "id": "dish_1566317801",
+      "kcal": 275.4,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1566317801/rgb.png"
+    },
+    {
+      "id": "dish_1566328988",
+      "kcal": 747.7478,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1566328988/rgb.png"
+    },
+    {
+      "id": "dish_1566331828",
+      "kcal": 349.5831,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1566331828/rgb.png"
+    },
+    {
+      "id": "dish_1566402197",
+      "kcal": 480.9461,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1566402197/rgb.png"
+    },
+    {
+      "id": "dish_1566414225",
+      "kcal": 125.1821,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1566414225/rgb.png"
+    },
+    {
+      "id": "dish_1566501153",
+      "kcal": 1006.918,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1566501153/rgb.png"
+    },
+    {
+      "id": "dish_1566502061",
+      "kcal": 408.3394,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1566502061/rgb.png"
+    },
+    {
+      "id": "dish_1566838378",
+      "kcal": 286.21,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1566838378/rgb.png"
+    },
+    {
+      "id": "dish_1566851584",
+      "kcal": 286.295,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1566851584/rgb.png"
+    },
+    {
+      "id": "dish_1567020340",
+      "kcal": 93.5883,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1567020340/rgb.png"
+    },
+    {
+      "id": "dish_1567023335",
+      "kcal": 138.3364,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1567023335/rgb.png"
+    },
+    {
+      "id": "dish_1567106825",
+      "kcal": 220.2009,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1567106825/rgb.png"
+    },
+    {
+      "id": "dish_1567110556",
+      "kcal": 127.1071,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1567110556/rgb.png"
+    },
+    {
+      "id": "dish_1568060414",
+      "kcal": 53.5986,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1568060414/rgb.png"
+    },
+    {
+      "id": "dish_1568061097",
+      "kcal": 146.245,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1568061097/rgb.png"
+    },
+    {
+      "id": "dish_1568313640",
+      "kcal": 71.14,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1568313640/rgb.png"
+    },
+    {
+      "id": "dish_1568314907",
+      "kcal": 481.1694,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1568314907/rgb.png"
+    },
+    {
+      "id": "dish_1568320296",
+      "kcal": 226.015,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1568320296/rgb.png"
+    },
+    {
+      "id": "dish_1568405466",
+      "kcal": 153.0994,
+      "url": "https://storage.googleapis.com/nutrition5k_dataset/nutrition5k_dataset/imagery/realsense_overhead/dish_1568405466/rgb.png"
+    }
+  ]
+}
