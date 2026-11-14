@@ -3,9 +3,8 @@ name: Android device proof
 # Installs the debug APK on a real Android runtime (the emulator image on a GitHub-hosted
 # runner), drives the app over the WebView DevTools protocol, records the screen and keeps
 # the video. Never runs on our server.
-# Manual only. The emulator image on the GitHub-hosted runner does not boot in time
-# (two dispatches timed out waiting for boot, KVM present). Until it does, the physical
-# Android check phone (HYCI-325) is the device proof. Run this by hand from the Actions tab.
+# Manual only for now: we boot the emulator ourselves (scripts/start-emulator.sh) so a broken
+# boot prints the emulator log instead of a bare timeout. Run it by hand from the Actions tab.
 on:
   workflow_dispatch:
 
@@ -51,16 +50,10 @@ jobs:
           npx cap add android
           npx cap sync android
           (cd android && ./gradlew --no-daemon assembleDebug)
-      - name: Install, drive and record the app
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 30
-          arch: x86_64
-          target: default
-          emulator-boot-timeout: 1200
-          disable-animations: true
-          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: bash scripts/device-proof.sh
+      - name: Boot the emulator, install, drive and record the app
+        run: |
+          bash scripts/start-emulator.sh
+          bash scripts/device-proof.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -69,4 +62,5 @@ jobs:
             proof/app-device.txt
             proof/device-home*.png
             proof/device-demo.mp4
+            /tmp/emulator.log
           if-no-files-found: warn
