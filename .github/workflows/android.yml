@@ -28,6 +28,8 @@ jobs:
           cache: npm
       - name: Photo sample is 100 plates with known calories
         run: node scripts/photo-eval-check-manifest.mjs
+      - name: Scored plates match the labels
+        run: node scripts/photo-eval-summary.mjs
       - run: npm ci
       - run: npm run typecheck
       - run: npm run typecheck:app
