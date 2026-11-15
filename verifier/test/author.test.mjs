@@ -1,6 +1,6 @@
-// The verifier is never the author's own family. The default verifier family is DeepSeek,
-// and the author states its family in one line of the pull request body. A missing line is
-// our workers (DeepSeek); anything else unclear fails closed.
+// The owner decided on 2026-11-15 that the verifier on GitHub is DeepSeek for every author,
+// so every accepted author family gets the DeepSeek verifier, and so does a body with no
+// author-model line. Only a value outside the four known families fails closed.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -31,13 +31,13 @@ test("row 3: a grok author gets the deepseek verifier", () => {
   assert.deepEqual(chooseFamilies("author-model: grok"), { authorFamily: "grok", verifierFamily: "deepseek" });
 });
 
-test("row 4: a deepseek author gets the claude verifier", () => {
-  assert.deepEqual(chooseFamilies("author-model: deepseek"), { authorFamily: "deepseek", verifierFamily: "claude" });
+test("row 4: a deepseek author gets the deepseek verifier", () => {
+  assert.deepEqual(chooseFamilies("author-model: deepseek"), { authorFamily: "deepseek", verifierFamily: "deepseek" });
 });
 
-test("row 5: a missing author-model line is a deepseek author, so the verifier is claude", () => {
+test("row 5: a missing author-model line is a deepseek author, so the verifier is deepseek", () => {
   for (const body of ["Just a plain description.", "", undefined, null]) {
-    assert.deepEqual(chooseFamilies(body), { authorFamily: "deepseek", verifierFamily: "claude" });
+    assert.deepEqual(chooseFamilies(body), { authorFamily: "deepseek", verifierFamily: "deepseek" });
   }
   assert.equal(AUTHOR_FAMILY_DEFAULT, "deepseek");
 });

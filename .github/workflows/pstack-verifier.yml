@@ -1,8 +1,8 @@
 name: pstack verifier
 
-# Every pull request gets a verifier from a different model family than its author. The
-# verifier RUNS the app on the base commit and on the head commit, in two local checkouts, and
-# compares what a user sees. A diff read, a bot review or green CI is not a verdict.
+# Every pull request gets a DeepSeek verifier, for every author (the owner's decision of
+# 2026-11-15). The verifier RUNS the app on the base commit and on the head commit, in two local
+# checkouts, and compares what a user sees. A diff read, a bot review or green CI is not a verdict.
 #
 # Never pull_request_target: the head commit's code must never run with a token that can write.
 # Drafts are skipped, and a pull request from a fork fails closed because GitHub withholds the

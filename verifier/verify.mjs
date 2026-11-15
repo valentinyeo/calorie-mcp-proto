@@ -3,7 +3,7 @@
 //
 // It compares one pull request's head commit against its base commit by RUNNING the app, not
 // by reading the diff. It picks the features whose source paths the diff touches (plus the
-// smoke feature), gives another model family the feature map rows, the two local URLs and the
+// smoke feature), gives the verifier the feature map rows, the two local URLs and the
 // drive tool, and collects that agent's JSON answer. A fixed function here, never the agent,
 // turns the answer into PASS, PASS+NOTES or FAIL.
 //
@@ -57,7 +57,8 @@ export const LOGIN_VAR_DEEPSEEK = "OPENCODE_API_KEY";
 export const AUTHOR_FAMILIES = ["claude", "openai", "grok", "deepseek"];
 // A pull request with no author-model line is one of our workers, and our workers are DeepSeek.
 export const AUTHOR_FAMILY_DEFAULT = "deepseek";
-// DeepSeek verifies by default; Claude verifies only a DeepSeek author.
+// The owner decided on 2026-11-15 that the verifier on GitHub is DeepSeek, for every author.
+// This is now the verifier family for every accepted author family, so a run can be same-family.
 export const VERIFIER_FAMILY_DEFAULT = "deepseek";
 export const VERDICTS = ["ok", "regression", "broken_on_both", "not_drivable"];
 // `none` is the fifth value: no finding at all. Without it no answer could ever be a plain
@@ -142,14 +143,16 @@ export function parseArgs(argv) {
 
 // ------------------------------------------------------------- author family
 
-// The one family choice, a pure function of the pull request body. The verifier is never the
-// author's own family. DeepSeek is the default verifier; Claude verifies only a DeepSeek author.
+// The one family choice, a pure function of the pull request body. The owner's decision of
+// 2026-11-15: the verifier on GitHub is DeepSeek, for every author, so every accepted family
+// below gets the same verifier family. The Claude verifier path stays in this file, unused by
+// this table.
 //
 //   author-model: claude    -> deepseek
 //   author-model: openai    -> deepseek
 //   author-model: grok      -> deepseek
-//   author-model: deepseek  -> claude
-//   line missing            -> deepseek author (our workers), so claude
+//   author-model: deepseek  -> deepseek
+//   line missing            -> deepseek author (our workers), so deepseek
 //   any other value         -> fail closed, reason unknown_author_model
 export function chooseFamilies(prBody) {
   const match = /^author-model:[ \t]*(\S+)[ \t]*$/im.exec(String(prBody ?? ""));
@@ -157,10 +160,7 @@ export function chooseFamilies(prBody) {
   if (!AUTHOR_FAMILIES.includes(authorFamily)) {
     throw new VerifierError(REASONS.authorModelUnknown, `${match[1]} is not one of ${AUTHOR_FAMILIES.join(", ")}`);
   }
-  return {
-    authorFamily,
-    verifierFamily: authorFamily === "deepseek" ? "claude" : VERIFIER_FAMILY_DEFAULT,
-  };
+  return { authorFamily, verifierFamily: VERIFIER_FAMILY_DEFAULT };
 }
 
 export function agentModelFor(provider) {
@@ -489,6 +489,11 @@ export function renderBody({ status, headSha, rows, reasons, notes, provider, mo
   }
   for (const note of extraNotes ?? []) lines.push(note);
   lines.push(`Verifier model family: ${provider} (${model}). Author model family: ${authorFamily}.`);
+  // A same-family run is a deliberate owner decision, so the comment states it plainly instead of
+  // leaving a reader to spot that the two families match.
+  if (provider === authorFamily) {
+    lines.push(`Same family: the author and the verifier are both ${provider} (owner's decision, 2026-11-15).`);
+  }
   if (selected.length > 0) {
     lines.push("", `Features in this run: ${selected.map((feature) => feature.name).join("; ")}.`);
   }

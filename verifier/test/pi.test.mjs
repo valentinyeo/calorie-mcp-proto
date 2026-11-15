@@ -103,6 +103,17 @@ test("a missing opencode-go login fails closed on the deepseek family, before an
   assert.match(body, /OPENCODE_API_KEY/);
 });
 
+test("a missing Claude login does not fail a DeepSeek run", async () => {
+  // The workflow hands over both secrets, and CLAUDE_CODE_OAUTH_TOKEN may simply be unset now
+  // that no author family reaches the Claude verifier.
+  const fixture = harness({ answer: answerFor([smoke]) });
+  const code = await fixture.run({ env: { PATH: "/usr/bin:/bin", OPENCODE_API_KEY: "oc-not-a-real-key" } });
+  assert.equal(code, 0);
+  assert.equal(fixture.calls.agent.length, 1);
+  assert.equal(fixture.calls.agent[0].provider, "deepseek");
+  assert.equal(fixture.read("comment.md").includes(REASONS.missingLoginVariable), false);
+});
+
 test("the deepseek login value never appears in any output", async () => {
   const loginValue = "opencode-go-login-not-real-1a2b3c";
   const fixture = harness({

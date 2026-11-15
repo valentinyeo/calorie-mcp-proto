@@ -46,6 +46,40 @@ test("the body carries the per feature table and the verifier model family", () 
   assert.match(body, /Verifier model family: claude \(claude-opus-5-5\)\. Author model family: deepseek\./);
 });
 
+test("a same-family run says so in one plain line", () => {
+  const body = renderBody({
+    status: STATUS.pass,
+    headSha: sha40,
+    rows: [],
+    reasons: [],
+    notes: [],
+    provider: "deepseek",
+    model: "deepseek-v4.1-flash",
+    authorFamily: "deepseek",
+    selected: [],
+  });
+  assert.ok(
+    body.includes("Same family: the author and the verifier are both deepseek (owner's decision, 2026-11-15)."),
+    body,
+  );
+  assert.equal(body.split("\n").filter((line) => line.startsWith("Same family: ")).length, 1);
+});
+
+test("a cross-family run does not claim a same family", () => {
+  const body = renderBody({
+    status: STATUS.pass,
+    headSha: sha40,
+    rows: [],
+    reasons: [],
+    notes: [],
+    provider: "claude",
+    model: "claude-opus-5-5",
+    authorFamily: "deepseek",
+    selected: [],
+  });
+  assert.equal(body.includes("Same family: "), false);
+});
+
 test("a pipe or a newline in observed text cannot break the table", () => {
   const table = renderTable([
     {

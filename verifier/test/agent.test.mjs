@@ -1,6 +1,9 @@
 // The agent call itself: one function, an allowlisted environment, a restricted tool list, and
 // pull request text that is only ever data. A model call is never made in these tests.
 import assert from "node:assert/strict";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 
 import {
@@ -111,14 +114,30 @@ test("the agent child environment is an allowlist, not the runner's environment"
   const fixture = harness({ answer: answerFor([smoke]) });
   await fixture.run();
   const env = fixture.calls.agent[0].env;
+  // The table sends every author to the DeepSeek verifier, so this run's allowlist carries the
+  // Pi login and never the Claude one, even though the runner's environment had both.
   assert.equal(env.GITHUB_TOKEN, undefined, "the GitHub token must not reach the agent");
-  assert.equal(env.CLAUDE_CODE_OAUTH_TOKEN, LOGIN);
+  assert.equal(env.OPENCODE_API_KEY, LOGIN);
+  assert.equal(env.CLAUDE_CODE_OAUTH_TOKEN, undefined, "the Claude login is not the DeepSeek one");
   assert.equal(env.PLAYWRIGHT_BROWSERS_PATH, "/opt/pw-browsers");
   assert.ok(env.HOME.startsWith(fixture.scratch));
   assert.deepEqual(
     Object.keys(env).sort(),
-    ["CLAUDE_CODE_OAUTH_TOKEN", "HOME", "LANG", "PATH", "PLAYWRIGHT_BROWSERS_PATH", "TMPDIR"].sort(),
+    ["HOME", "LANG", "OPENCODE_API_KEY", "PATH", "PLAYWRIGHT_BROWSERS_PATH", "TMPDIR"].sort(),
   );
+});
+
+test("the kept Claude family reads only its own login variable", () => {
+  const scratch = mkdtempSync(join(tmpdir(), "pstack-claude-env-"));
+  const env = agentEnv({
+    provider: "claude",
+    login: { name: LOGIN_VAR_CLAUDE, value: "oat-not-a-real-token" },
+    scratch,
+    baseEnv: { PATH: "/usr/bin", CLAUDE_CODE_OAUTH_TOKEN: "oat-not-a-real-token", OPENCODE_API_KEY: "oc-not-a-real-key" },
+  });
+  assert.equal(env.CLAUDE_CODE_OAUTH_TOKEN, "oat-not-a-real-token");
+  assert.equal(env.OPENCODE_API_KEY, undefined);
+  assert.equal(env.GITHUB_TOKEN, undefined);
 });
 
 test("the DeepSeek path runs Pi, so the Claude flag list is not used for it", () => {

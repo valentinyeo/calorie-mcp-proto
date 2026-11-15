@@ -126,20 +126,22 @@ Caveat for d: the "browser" step was played by `scripts/browser-sim.mjs`, which 
 
 ## The pstack verifier (SOFT-2383)
 
-`.github/workflows/pstack-verifier.yml` runs `verifier/verify.mjs` on every non-draft pull request. It starts the base and head commits in two local checkouts with no model login, gives one agent from another model family the feature map rows, the two URLs and `verifier/drive.mjs`, and a fixed function turns the agent's JSON answer into PASS, PASS+NOTES or FAIL.
+`.github/workflows/pstack-verifier.yml` runs `verifier/verify.mjs` on every non-draft pull request. It starts the base and head commits in two local checkouts with no model login, gives the verifier the feature map rows, the two URLs and `verifier/drive.mjs`, and a fixed function turns the agent's JSON answer into PASS, PASS+NOTES or FAIL.
 
-The verifier is never the author's own family. The author writes one line in the pull request body:
+The owner decided on 2026-11-15 that the verifier on GitHub is DeepSeek, for every author. The author writes one line in the pull request body:
 
 | `author-model:` line | verifier family |
 |---|---|
 | `claude` | deepseek |
 | `openai` | deepseek |
 | `grok` | deepseek |
-| `deepseek` | claude |
-| line missing | claude (our workers are DeepSeek, so a missing line is a DeepSeek author) |
+| `deepseek` | deepseek |
+| line missing | deepseek (our workers are DeepSeek, so a missing line is a DeepSeek author) |
 | any other value | FAIL, reason `unknown_author_model` |
 
-The Claude path uses the Claude Code CLI with the constant `claude-opus-5-5`. The DeepSeek path runs the Pi coding agent (`@earendil-works/pi-coding-agent`, installed by the workflow's agent step at one pinned version) in print mode: `pi -p --provider opencode-go --model deepseek-v4.1-flash`, prompt on standard input, answer on standard output, login `OPENCODE_API_KEY`, tools limited to `bash` and `read` with extensions, MCP, skills, prompt templates and context files switched off, and its session directory inside the scratch dir. The credential is one repository secret, `OPENCODE_API_KEY`; a missing one fails closed with `missing_login_variable` before any model call. That DeepSeek path is UNPROVEN until one real workflow run passes: no model call has been made from this repo yet, and only the offline tests (which assert the exact argument list) are proven. Pi has no `--add-dir` equivalent, so its `bash` tool can run any command the runner user can and read any file that user can read; it runs with the allowlisted environment above and no GitHub token, and the app processes' isolation is unchanged.
+Every accepted author family gets the DeepSeek verifier, so a run is often same-family. The PR comment says so in one line when it is: `Same family: the author and the verifier are both deepseek (owner's decision, 2026-11-15).`
+
+The Claude path stays in `verifier/verify.mjs`, unused by the table: the Claude Code CLI with the constant `claude-opus-5-5`, kept for the day the owner changes the table back. The DeepSeek path runs the Pi coding agent (`@earendil-works/pi-coding-agent`, installed by the workflow's agent step at one pinned version) in print mode: `pi -p --provider opencode-go --model deepseek-v4.1-flash`, prompt on standard input, answer on standard output, login `OPENCODE_API_KEY`, tools limited to `bash` and `read` with extensions, MCP, skills, prompt templates and context files switched off, and its session directory inside the scratch dir. The credential is one repository secret, `OPENCODE_API_KEY`; a missing one fails closed with `missing_login_variable` before any model call. That DeepSeek path is UNPROVEN until one real workflow run passes: no model call has been made from this repo yet, and only the offline tests (which assert the exact argument list) are proven. Pi has no `--add-dir` equivalent, so its `bash` tool can run any command the runner user can and read any file that user can read; it runs with the allowlisted environment above and no GitHub token, and the app processes' isolation is unchanged.
 
 ## Where proof e stops (2026-11-13, SOFT-1281)
 
