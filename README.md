@@ -124,6 +124,23 @@ Proofs b, c and d ran before the final redeploy that closed sign-up and trimmed 
 
 Caveat for d: the "browser" step was played by `scripts/browser-sim.mjs`, which makes the same HTTP calls the sign-in and consent pages make. A human browser was not used. Claude Code itself did the discovery, registration, PKCE, token exchange and tool call.
 
+## The pstack verifier (SOFT-2383)
+
+`.github/workflows/pstack-verifier.yml` runs `verifier/verify.mjs` on every non-draft pull request. It starts the base and head commits in two local checkouts with no model login, gives one agent from another model family the feature map rows, the two URLs and `verifier/drive.mjs`, and a fixed function turns the agent's JSON answer into PASS, PASS+NOTES or FAIL.
+
+The verifier is never the author's own family. The author writes one line in the pull request body:
+
+| `author-model:` line | verifier family |
+|---|---|
+| `claude` | deepseek |
+| `openai` | deepseek |
+| `grok` | deepseek |
+| `deepseek` | claude |
+| line missing | claude (our workers are DeepSeek, so a missing line is a DeepSeek author) |
+| any other value | FAIL, reason `unknown_author_model` |
+
+The Claude path uses the Claude Code CLI with the constant `claude-opus-5-5`. The DeepSeek path points the same CLI at `https://api.deepseek.com/anthropic` with the constant `deepseek-flash`, a Flash model, never a Pro model. That DeepSeek path is UNPROVEN: the model id is the one this repo already used and no DeepSeek docs page confirms it, and no real run has passed yet. Only the faked agent function and the offline tests are proven.
+
 ## Where proof e stops (2026-11-13, SOFT-1281)
 
 Sign-up is closed on the live worker (`SIGNUP_OPEN = "0"`), and the Worker deploy token available on this box

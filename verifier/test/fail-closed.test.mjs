@@ -83,7 +83,7 @@ test("it fails closed when the agent drove nothing on the head", async () => {
 });
 
 test("an unknown author-model value fails closed before the agent is called", async () => {
-  const fixture = harness({ prBody: "author-model: grok\n\nA change.", answer: answerFor([smoke]) });
+  const fixture = harness({ prBody: "author-model: gemini\n\nA change.", answer: answerFor([smoke]) });
   assert.equal(await fixture.run(), 1);
   assert.equal(fixture.calls.agent.length, 0);
   assert.match(fixture.read("comment.md"), new RegExp(REASONS.authorModelUnknown));

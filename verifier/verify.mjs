@@ -43,8 +43,11 @@ export const LOGIN_VAR_CLAUDE = "CLAUDE_CODE_OAUTH_TOKEN";
 export const LOGIN_VAR_DEEPSEEK = "DEEPSEEK_API_KEY";
 export const DEEPSEEK_BASE_URL = "https://api.deepseek.com/anthropic";
 
-export const AUTHOR_FAMILIES = ["deepseek", "claude", "openai"];
+export const AUTHOR_FAMILIES = ["claude", "openai", "grok", "deepseek"];
+// A pull request with no author-model line is one of our workers, and our workers are DeepSeek.
 export const AUTHOR_FAMILY_DEFAULT = "deepseek";
+// DeepSeek verifies by default; Claude verifies only a DeepSeek author.
+export const VERIFIER_FAMILY_DEFAULT = "deepseek";
 export const VERDICTS = ["ok", "regression", "broken_on_both", "not_drivable"];
 // `none` is the fifth value: no finding at all. Without it no answer could ever be a plain
 // PASS, because every row would carry at least a note.
@@ -62,7 +65,7 @@ export const REASONS = {
   answerSchema: "agent_answer_schema",
   headNotStarted: "app_did_not_start_on_head",
   droveNothing: "agent_drove_nothing",
-  authorModelUnknown: "author_model_unknown",
+  authorModelUnknown: "unknown_author_model",
   featureMapMissing: "feature_map_missing",
   noFeatureSelected: "no_feature_selected",
   badSha: "bad_head_sha",
@@ -120,19 +123,25 @@ export function parseArgs(argv) {
 
 // ------------------------------------------------------------- author family
 
-export function parseAuthorFamily(prBody) {
+// The one family choice, a pure function of the pull request body. The verifier is never the
+// author's own family. DeepSeek is the default verifier; Claude verifies only a DeepSeek author.
+//
+//   author-model: claude    -> deepseek
+//   author-model: openai    -> deepseek
+//   author-model: grok      -> deepseek
+//   author-model: deepseek  -> claude
+//   line missing            -> deepseek author (our workers), so claude
+//   any other value         -> fail closed, reason unknown_author_model
+export function chooseFamilies(prBody) {
   const match = /^author-model:[ \t]*(\S+)[ \t]*$/im.exec(String(prBody ?? ""));
-  if (match === null) return AUTHOR_FAMILY_DEFAULT;
-  const family = match[1].toLowerCase();
-  if (!AUTHOR_FAMILIES.includes(family)) {
+  const authorFamily = match === null ? AUTHOR_FAMILY_DEFAULT : match[1].toLowerCase();
+  if (!AUTHOR_FAMILIES.includes(authorFamily)) {
     throw new VerifierError(REASONS.authorModelUnknown, `${match[1]} is not one of ${AUTHOR_FAMILIES.join(", ")}`);
   }
-  return family;
-}
-
-// The verifier must come from another model family than the author.
-export function providerForFamily(family) {
-  return family === "claude" ? "deepseek" : "claude";
+  return {
+    authorFamily,
+    verifierFamily: authorFamily === "deepseek" ? "claude" : VERIFIER_FAMILY_DEFAULT,
+  };
 }
 
 export function agentModelFor(provider) {
@@ -610,8 +619,7 @@ export async function main(argv, injected = {}) {
     assertSha(opts.headSha);
     const features = parseFeatureMap(readFileSync(opts.featureMap, "utf8"));
     const prBody = readOptional(opts.prBodyFile);
-    authorFamily = parseAuthorFamily(prBody);
-    provider = providerForFamily(authorFamily);
+    ({ authorFamily, verifierFamily: provider } = chooseFamilies(prBody));
     model = agentModelFor(provider);
     const login = loginFor(provider, env);
     secrets.push(login.value);

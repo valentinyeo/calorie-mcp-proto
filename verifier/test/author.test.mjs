@@ -1,62 +1,70 @@
-// The verifier has to come from a different model family than the author. The author states
-// its family in one line of the pull request body; anything unclear fails closed.
+// The verifier is never the author's own family. The default verifier family is DeepSeek,
+// and the author states its family in one line of the pull request body. A missing line is
+// our workers (DeepSeek); anything else unclear fails closed.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
   agentModelFor,
+  AUTHOR_FAMILIES,
   AUTHOR_FAMILY_DEFAULT,
+  chooseFamilies,
   LOGIN_VAR_CLAUDE,
   LOGIN_VAR_DEEPSEEK,
   loginFor,
   MODEL_CLAUDE,
   MODEL_DEEPSEEK,
-  parseAuthorFamily,
-  providerForFamily,
   REASONS,
 } from "../verify.mjs";
 
-test("a pull request with no author-model line is treated as our workers: deepseek", () => {
-  assert.equal(parseAuthorFamily("Just a plain description."), AUTHOR_FAMILY_DEFAULT);
+// The six rows of the owner's table, one test per row, in table order.
+
+test("row 1: a claude author gets the deepseek verifier", () => {
+  assert.deepEqual(chooseFamilies("author-model: claude"), { authorFamily: "claude", verifierFamily: "deepseek" });
+});
+
+test("row 2: an openai author gets the deepseek verifier", () => {
+  assert.deepEqual(chooseFamilies("author-model: openai"), { authorFamily: "openai", verifierFamily: "deepseek" });
+});
+
+test("row 3: a grok author gets the deepseek verifier", () => {
+  assert.deepEqual(chooseFamilies("author-model: grok"), { authorFamily: "grok", verifierFamily: "deepseek" });
+});
+
+test("row 4: a deepseek author gets the claude verifier", () => {
+  assert.deepEqual(chooseFamilies("author-model: deepseek"), { authorFamily: "deepseek", verifierFamily: "claude" });
+});
+
+test("row 5: a missing author-model line is a deepseek author, so the verifier is claude", () => {
+  for (const body of ["Just a plain description.", "", undefined, null]) {
+    assert.deepEqual(chooseFamilies(body), { authorFamily: "deepseek", verifierFamily: "claude" });
+  }
   assert.equal(AUTHOR_FAMILY_DEFAULT, "deepseek");
-  assert.equal(providerForFamily(AUTHOR_FAMILY_DEFAULT), "claude");
 });
 
-test("an empty or missing body is treated as deepseek", () => {
-  assert.equal(parseAuthorFamily(""), "deepseek");
-  assert.equal(parseAuthorFamily(undefined), "deepseek");
-  assert.equal(parseAuthorFamily(null), "deepseek");
-});
-
-test("every family the ticket names is accepted, in any case", () => {
-  assert.equal(parseAuthorFamily("author-model: deepseek"), "deepseek");
-  assert.equal(parseAuthorFamily("author-model: claude"), "claude");
-  assert.equal(parseAuthorFamily("author-model: openai"), "openai");
-  assert.equal(parseAuthorFamily("AUTHOR-MODEL: Claude"), "claude");
-  assert.equal(parseAuthorFamily("some text\n\nauthor-model:   openai   \nmore text"), "openai");
-});
-
-test("a claude author gets a non-Claude verifier", () => {
-  assert.equal(providerForFamily("claude"), "deepseek");
-  assert.equal(agentModelFor("deepseek"), MODEL_DEEPSEEK);
-  assert.equal(MODEL_DEEPSEEK, "deepseek-flash");
-});
-
-test("every other author gets the Claude family verifier", () => {
-  assert.equal(providerForFamily("deepseek"), "claude");
-  assert.equal(providerForFamily("openai"), "claude");
-  assert.equal(agentModelFor("claude"), MODEL_CLAUDE);
-  assert.equal(MODEL_CLAUDE, "claude-opus-5-5");
-});
-
-test("an unknown author-model value fails closed", () => {
-  for (const value of ["grok", "gemini", "claude,deepseek", "none"]) {
+test("row 6: any other author-model value fails closed as unknown_author_model", () => {
+  for (const value of ["gemini", "claude,deepseek", "none"]) {
     assert.throws(
-      () => parseAuthorFamily(`author-model: ${value}`),
+      () => chooseFamilies(`author-model: ${value}`),
       (error) => error.reason === REASONS.authorModelUnknown,
       value,
     );
   }
+  assert.equal(REASONS.authorModelUnknown, "unknown_author_model");
+});
+
+test("every accepted family is read in any case and anywhere in the body", () => {
+  assert.deepEqual(AUTHOR_FAMILIES, ["claude", "openai", "grok", "deepseek"]);
+  assert.equal(chooseFamilies("AUTHOR-MODEL: Claude").authorFamily, "claude");
+  assert.equal(chooseFamilies("some text\n\nauthor-model:   grok   \nmore text").authorFamily, "grok");
+});
+
+test("the deepseek verifier model is the flash constant, never a pro model", () => {
+  assert.equal(agentModelFor("deepseek"), MODEL_DEEPSEEK);
+  assert.equal(agentModelFor("claude"), MODEL_CLAUDE);
+  assert.equal(MODEL_DEEPSEEK, "deepseek-flash");
+  assert.equal(/pro/i.test(MODEL_DEEPSEEK), false);
+  assert.equal(MODEL_CLAUDE, "claude-opus-5-5");
 });
 
 test("each provider reads exactly its own login variable", () => {
