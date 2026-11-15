@@ -12,7 +12,8 @@
     "app:android": "npx cap add android && npx cap sync android",
     "deploy": "wrangler deploy",
     "migrate:local": "wrangler d1 migrations apply calorie-mcp-proto --local",
-    "migrate": "wrangler d1 migrations apply calorie-mcp-proto --remote"
+    "migrate": "wrangler d1 migrations apply calorie-mcp-proto --remote",
+    "verifier:test": "node --test \"verifier/test/*.test.mjs\""
   },
   "dependencies": {
     "@better-auth/mcp": "^1.7.14",
