@@ -4,10 +4,11 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  agentArgs,
+  agentBin,
   agentEnv,
   buildPrompt,
   callAgent,
-  DEEPSEEK_BASE_URL,
   LOGIN_VAR_CLAUDE,
   MODEL_CLAUDE,
   MODEL_DEEPSEEK,
@@ -120,18 +121,40 @@ test("the agent child environment is an allowlist, not the runner's environment"
   );
 });
 
-test("the DeepSeek path uses its documented endpoint and its own variable only", () => {
-  const env = agentEnv({
+test("the DeepSeek path runs Pi, so the Claude flag list is not used for it", () => {
+  const args = agentArgs({
     provider: "deepseek",
-    login: { name: "DEEPSEEK_API_KEY", value: "sk-deepseek-not-real" },
-    scratch: "/tmp/pstack-agent-env-test",
-    baseEnv: { PATH: "/usr/bin" },
+    model: MODEL_DEEPSEEK,
+    dirs: ["/work/parent", "/work/head"],
+    driveTool: "/work/parent/verifier/drive.mjs",
+    sessionDir: "/work/scratch/pi-sessions",
   });
-  assert.equal(env.ANTHROPIC_BASE_URL, DEEPSEEK_BASE_URL);
-  assert.equal(env.ANTHROPIC_BASE_URL, "https://api.deepseek.com/anthropic");
-  assert.equal(env.ANTHROPIC_AUTH_TOKEN, "sk-deepseek-not-real");
-  assert.equal(env.ANTHROPIC_MODEL, MODEL_DEEPSEEK);
-  assert.equal(env[LOGIN_VAR_CLAUDE], undefined, "no Claude login on the DeepSeek path");
+  assert.equal(args.includes("--add-dir"), false, "Pi has no --add-dir");
+  assert.equal(args.includes("--safe-mode"), false, "that is a Claude Code flag");
+  assert.equal(agentBin("deepseek"), "pi");
+});
+
+test("the Claude path keeps its exact flag list", () => {
+  const args = agentArgs({
+    provider: "claude",
+    model: MODEL_CLAUDE,
+    dirs: ["/work/parent", "/work/head"],
+    driveTool: "/work/parent/verifier/drive.mjs",
+    sessionDir: "/work/scratch/pi-sessions",
+  });
+  assert.deepEqual(args, [
+    "-p",
+    "--output-format", "text",
+    "--model", MODEL_CLAUDE,
+    "--safe-mode",
+    "--strict-mcp-config",
+    "--tools", "Bash,Read",
+    "--allowedTools", "Bash(node /work/parent/verifier/drive.mjs *)", "Read",
+    "--disallowedTools", "WebFetch", "WebSearch", "Write", "Edit", "NotebookEdit",
+    "--max-turns", "120",
+    "--add-dir", "/work/parent",
+    "--add-dir", "/work/head",
+  ]);
 });
 
 test("callAgent passes the documented, restricted flag list", () => {

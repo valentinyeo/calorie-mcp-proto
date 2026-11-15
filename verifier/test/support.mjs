@@ -49,7 +49,7 @@ export function harness({
   const env = {
     PATH: process.env.PATH ?? "/usr/bin:/bin",
     CLAUDE_CODE_OAUTH_TOKEN: login,
-    DEEPSEEK_API_KEY: login,
+    OPENCODE_API_KEY: login,
     GITHUB_TOKEN: "gh-token-that-must-not-reach-the-agent",
     PLAYWRIGHT_BROWSERS_PATH: "/opt/pw-browsers",
   };

@@ -62,20 +62,20 @@ test("every accepted family is read in any case and anywhere in the body", () =>
 test("the deepseek verifier model is the flash constant, never a pro model", () => {
   assert.equal(agentModelFor("deepseek"), MODEL_DEEPSEEK);
   assert.equal(agentModelFor("claude"), MODEL_CLAUDE);
-  assert.equal(MODEL_DEEPSEEK, "deepseek-flash");
+  assert.equal(MODEL_DEEPSEEK, "deepseek-v4.1-flash");
   assert.equal(/pro/i.test(MODEL_DEEPSEEK), false);
   assert.equal(MODEL_CLAUDE, "claude-opus-5-5");
 });
 
 test("each provider reads exactly its own login variable", () => {
-  const env = { CLAUDE_CODE_OAUTH_TOKEN: "oat-value-123456", DEEPSEEK_API_KEY: "sk-deepseek-123456" };
+  const env = { CLAUDE_CODE_OAUTH_TOKEN: "oat-value-123456", OPENCODE_API_KEY: "oc-value-123456" };
   assert.deepEqual(loginFor("claude", env), { name: LOGIN_VAR_CLAUDE, value: "oat-value-123456" });
-  assert.deepEqual(loginFor("deepseek", env), { name: LOGIN_VAR_DEEPSEEK, value: "sk-deepseek-123456" });
+  assert.deepEqual(loginFor("deepseek", env), { name: LOGIN_VAR_DEEPSEEK, value: "oc-value-123456" });
 });
 
 test("a missing or blank login variable fails closed with its own reason", () => {
   for (const provider of ["claude", "deepseek"]) {
-    for (const env of [{}, { CLAUDE_CODE_OAUTH_TOKEN: "  ", DEEPSEEK_API_KEY: "" }]) {
+    for (const env of [{}, { CLAUDE_CODE_OAUTH_TOKEN: "  ", OPENCODE_API_KEY: "" }]) {
       assert.throws(
         () => loginFor(provider, env),
         (error) => error.reason === REASONS.missingLoginVariable,
@@ -84,12 +84,12 @@ test("a missing or blank login variable fails closed with its own reason", () =>
     }
   }
   assert.throws(
-    () => loginFor("claude", { DEEPSEEK_API_KEY: "sk-deepseek-123456" }),
+    () => loginFor("claude", { OPENCODE_API_KEY: "oc-value-123456" }),
     (error) => error.reason === REASONS.missingLoginVariable,
   );
 });
 
-test("the login variable names are the ones the docs name", () => {
+test("the login variable names are the ones Pi and Claude Code name", () => {
   assert.equal(LOGIN_VAR_CLAUDE, "CLAUDE_CODE_OAUTH_TOKEN");
-  assert.equal(LOGIN_VAR_DEEPSEEK, "DEEPSEEK_API_KEY");
+  assert.equal(LOGIN_VAR_DEEPSEEK, "OPENCODE_API_KEY");
 });

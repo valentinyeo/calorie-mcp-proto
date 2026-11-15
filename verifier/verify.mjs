@@ -29,7 +29,18 @@ import { pathToFileURL } from "node:url";
 
 // Model constants: one place to change a model, never spelled in the workflow.
 export const MODEL_CLAUDE = "claude-opus-5-5";
-export const MODEL_DEEPSEEK = "deepseek-flash";
+// The owner's rule: DeepSeek runs through the Pi coding agent and nothing else. Pi's
+// `opencode-go` provider catalog (Pi 1.5.2, dist provider data) lists `deepseek-v4.1-flash`
+// and `deepseek-v4-pro`; this constant is the Flash id, never a Pro one.
+export const MODEL_DEEPSEEK = "deepseek-v4.1-flash";
+// Provider id exactly as Pi names it: `opencode-go` (pi --help provider list and the
+// pi-ai provider source `opencodeGoProvider()`).
+export const PROVIDER_DEEPSEEK = "opencode-go";
+// The npm package the workflow installs, pinned to one exact version.
+export const PI_PACKAGE = "@earendil-works/pi-coding-agent";
+// The only thinking levels `deepseek-v4.1-flash` advertises are high and max (its entry in
+// the opencode-go catalog), so `high` is the lowest level that model accepts.
+export const PI_THINKING = "high";
 
 // The environment variable the Claude Code docs name for a subscription login on CI:
 // https://code.claude.com/docs/en/github-actions ("CLAUDE_CODE_OAUTH_TOKEN: an OAuth token
@@ -37,11 +48,10 @@ export const MODEL_DEEPSEEK = "deepseek-flash";
 // `claude setup-token`"). Also listed at https://code.claude.com/docs/en/env-vars
 export const LOGIN_VAR_CLAUDE = "CLAUDE_CODE_OAUTH_TOKEN";
 
-// DeepSeek's Anthropic-compatible endpoint and the variable its own Claude Code page names:
-// https://api-docs.deepseek.com/guides/anthropic_api ("ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic")
-// https://api-docs.deepseek.com/quick_start/agent_integrations/claude_code ("ANTHROPIC_AUTH_TOKEN")
-export const LOGIN_VAR_DEEPSEEK = "DEEPSEEK_API_KEY";
-export const DEEPSEEK_BASE_URL = "https://api.deepseek.com/anthropic";
+// Pi's `opencode-go` provider reads one variable: OPENCODE_API_KEY. Two sources agree:
+// `pi --help` ("OPENCODE_API_KEY - OpenCode Zen/OpenCode Go API key") and the provider source
+// `envApiKeyAuth("OpenCode API key", ["OPENCODE_API_KEY"])` in the Pi 1.5.2 tarball.
+export const LOGIN_VAR_DEEPSEEK = "OPENCODE_API_KEY";
 
 export const AUTHOR_FAMILIES = ["claude", "openai", "grok", "deepseek"];
 // A pull request with no author-model line is one of our workers, and our workers are DeepSeek.
@@ -485,17 +495,47 @@ export function renderBody({ status, headSha, rows, reasons, notes, provider, mo
 
 // The one function that calls a model. Tests pass their own function with the same shape, so
 // nothing else in this file knows how the model is reached.
-export function callAgent({
-  provider,
-  model,
-  prompt,
-  env,
-  cwd,
-  dirs,
-  driveTool,
-  timeoutMs = 20 * 60 * 1000,
-  bin = "claude",
-}) {
+export function agentBin(provider) {
+  return provider === "deepseek" ? "pi" : "claude";
+}
+
+// The argument list, in one place, per family. The DeepSeek family runs Pi in print mode; the
+// Claude family keeps the Claude Code CLI flags it had before this change.
+export function agentArgs({ provider, model, dirs = [], driveTool, sessionDir }) {
+  if (provider === "deepseek") {
+    // Flags, each from `pi --help` on this machine (Pi 1.5.0) and the same options in the Pi
+    // 1.5.2 tarball's docs/cli.md:
+    //   -p ............................ --print, non-interactive print mode (cli.md:47)
+    //   --provider ................... restricts --model lookup, requires --model (cli.md:58)
+    //   --model ...................... the flash constant above (cli.md:60)
+    //   --thinking ................... thinking level (cli.md:71), clamped to the model
+    //   --session-dir ................ session storage inside the scratch dir (cli.md:98)
+    //   --tools ...................... replaces the tool selection with bash and read (cli.md:121)
+    //   --exclude-tools .............. belt and braces on the write tools (cli.md:123)
+    //   --no-extensions .............. no discovered extensions (cli.md:198)
+    //   --no-mcp ..................... no MCP server and no MCP tool (cli.md:200)
+    //   --no-skills .................. no skills (cli.md:204)
+    //   --no-prompt-templates ........ no templates (cli.md:208)
+    //   --no-context-files ........... no AGENTS.md/CLAUDE.md from either checkout (cli.md:216)
+    // The prompt goes in on stdin: "Piped stdin | Prepend its contents to the first prompt"
+    // (cli.md:38), and Pi's own buildInitialMessage makes piped stdin the initial message when
+    // no message argument is given. Pi has no --add-dir: the two checkout paths reach the
+    // agent in the prompt text, and the process works as the runner user.
+    return [
+      "-p",
+      "--provider", PROVIDER_DEEPSEEK,
+      "--model", model,
+      "--thinking", PI_THINKING,
+      "--session-dir", sessionDir,
+      "--tools", "bash,read",
+      "--exclude-tools", "edit,write,powershell",
+      "--no-extensions",
+      "--no-mcp",
+      "--no-skills",
+      "--no-prompt-templates",
+      "--no-context-files",
+    ];
+  }
   // Flags, each from the Claude Code CLI reference (https://code.claude.com/docs/en/cli-reference):
   //   -p / --print ................. non-interactive print mode
   //   --output-format text ......... plain text out, the JSON answer is what we parse
@@ -507,7 +547,7 @@ export function callAgent({
   //   --disallowedTools ............ belt and braces on network and write tools
   //   --add-dir .................... read access to the two checkouts
   //   --max-turns .................. stop a runaway session
-  const args = [
+  return [
     "-p",
     "--output-format", "text",
     "--model", model,
@@ -519,6 +559,21 @@ export function callAgent({
     "--max-turns", "120",
     ...dirs.flatMap((dir) => ["--add-dir", dir]),
   ];
+}
+
+export function callAgent({
+  provider,
+  model,
+  prompt,
+  env,
+  cwd,
+  dirs = [],
+  driveTool,
+  sessionDir = join(cwd, "pi-sessions"),
+  timeoutMs = 20 * 60 * 1000,
+  bin = agentBin(provider),
+}) {
+  const args = agentArgs({ provider, model, dirs, driveTool, sessionDir });
   const result = spawnSync(bin, args, {
     cwd,
     encoding: "utf8",
@@ -529,6 +584,8 @@ export function callAgent({
   });
   const timedOut = result.error?.code === "ETIMEDOUT" || (result.signal !== null && result.signal !== undefined);
   return {
+    bin,
+    args,
     code: result.status ?? 1,
     stdout: result.stdout ?? "",
     stderr: result.stderr ?? "",
@@ -550,14 +607,10 @@ export function agentEnv({ provider, login, scratch, baseEnv }) {
     env.PLAYWRIGHT_BROWSERS_PATH = baseEnv.PLAYWRIGHT_BROWSERS_PATH;
   }
   if (provider === "deepseek") {
-    // https://api-docs.deepseek.com/quick_start/agent_integrations/claude_code
-    env.ANTHROPIC_BASE_URL = DEEPSEEK_BASE_URL;
-    env.ANTHROPIC_AUTH_TOKEN = login.value;
-    env.ANTHROPIC_MODEL = MODEL_DEEPSEEK;
-    env.ANTHROPIC_DEFAULT_OPUS_MODEL = MODEL_DEEPSEEK;
-    env.ANTHROPIC_DEFAULT_SONNET_MODEL = MODEL_DEEPSEEK;
-    env.ANTHROPIC_DEFAULT_HAIKU_MODEL = MODEL_DEEPSEEK;
-    env.CLAUDE_CODE_SUBAGENT_MODEL = MODEL_DEEPSEEK;
+    // The only variable Pi's opencode-go provider reads (see LOGIN_VAR_DEEPSEEK). No endpoint
+    // override and no Anthropic model variables are handed over: Pi picks the model from
+    // --provider and --model.
+    env[LOGIN_VAR_DEEPSEEK] = login.value;
   } else {
     env[LOGIN_VAR_CLAUDE] = login.value;
   }
@@ -664,12 +717,15 @@ export async function main(argv, injected = {}) {
 
     const agentCwd = join(opts.scratch, "agent-home");
     mkdirSync(agentCwd, { recursive: true });
+    const sessionDir = join(agentCwd, "pi-sessions");
+    mkdirSync(sessionDir, { recursive: true });
     const result = await runAgent({
       provider,
       model,
       prompt,
       env: agentEnv({ provider, login, scratch: opts.scratch, baseEnv: env }),
       cwd: agentCwd,
+      sessionDir,
       dirs: [opts.parentDir, opts.headDir],
       driveTool: opts.driveTool,
       timeoutMs: Number(env.PSTACK_AGENT_TIMEOUT_MS ?? 20 * 60 * 1000),
