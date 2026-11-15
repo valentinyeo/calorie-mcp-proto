@@ -87,16 +87,27 @@ jobs:
             echo "PSTACK_VERIFIER_SOURCE=head" >> "$GITHUB_ENV"
             echo "Bootstrap run: the base commit has no verifier, so the head checkout's own scripts are used this once." >> "$GITHUB_STEP_SUMMARY"
           fi
-          gh pr diff "$PR_NUMBER" > "$work/pr.diff" || true
-          gh pr view "$PR_NUMBER" --json body --jq .body > "$work/pr-body.md"
-          gh pr view "$PR_NUMBER" --json files --jq '.files[].path' > "$work/changed-files.txt"
+          gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" > "$work/pr.diff" || true
+          gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json body --jq .body > "$work/pr-body.md"
+          gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json files --jq '.files[].path' > "$work/changed-files.txt"
 
+      # The app user cannot walk into the runner's own home: the kernel checks every directory
+      # on the way down, so a checkout left under $GITHUB_WORKSPACE is unreachable to pstackapp
+      # even when pstackapp owns every file in it. That is what the first real run hit: both
+      # start scripts died in their first second with "Permission denied", and nothing said so.
+      # The checkouts the app runs from are copied to /opt/pstack, which the app user owns; the
+      # runner's home keeps its permissions, and the untrusted app never gets a path into it.
       - name: Install, build and start both checkouts as an unprivileged user with no model login
         run: |
           set -euo pipefail
+          logs="$RUNNER_TEMP/pstack"
+          app_root=/opt/pstack
           sudo useradd --create-home --shell /bin/bash pstackapp
-          sudo install -d -o pstackapp -g pstackapp /opt/pw-browsers /opt/pstack-mounts
-          sudo chown -R pstackapp:pstackapp "$GITHUB_WORKSPACE/parent" "$GITHUB_WORKSPACE/head"
+          sudo install -d -o pstackapp -g pstackapp /opt/pw-browsers /opt/pstack-mounts "$app_root"
+          sudo rm -rf "$app_root/parent" "$app_root/head"
+          sudo cp -a "$GITHUB_WORKSPACE/parent" "$app_root/parent"
+          sudo cp -a "$GITHUB_WORKSPACE/head" "$app_root/head"
+          sudo chown -R pstackapp:pstackapp "$app_root/parent" "$app_root/head"
           node_bin=$(dirname "$(command -v node)")
           # env -i plus this short allowlist is the whole environment both checkouts get: no
           # login of any kind, no token, no HOME of a logged-in user. start-app.sh also unsets
@@ -111,37 +122,47 @@ jobs:
               PSTACK_APP_PORT=5173 \
               "$@"
           }
-          run_as_app bash "$PSTACK_VERIFIER_DIR/start-app.sh" "$GITHUB_WORKSPACE/parent" 8787 \
-            > "$RUNNER_TEMP/pstack/logs-parent.log" 2>&1 &
-          run_as_app bash "$PSTACK_VERIFIER_DIR/start-app.sh" "$GITHUB_WORKSPACE/head" 8789 \
-            > "$RUNNER_TEMP/pstack/logs-head.log" 2>&1 &
-          deadline=$((SECONDS + 600))
-          while [ "$SECONDS" -lt "$deadline" ]; do
-            settled=0
-            for side in parent head; do
-              if grep -qE '^(READY|FAILED) ' "$RUNNER_TEMP/pstack/logs-$side.log" 2>/dev/null; then
-                settled=$((settled + 1))
-              fi
-            done
-            [ "$settled" -eq 2 ] && break
-            sleep 3
-          done
+          verifier_side=$PSTACK_VERIFIER_SOURCE
+          start_script="$app_root/$verifier_side/verifier/start-app.sh"
+          reach="$app_root/$verifier_side/verifier/reach.sh"
+          # Before starting anything, name the exact path component that stops the app user, so
+          # the log carries one readable line instead of a bare "Permission denied".
+          start_side() {
+            side=$1
+            port=$2
+            app="$app_root/$side"
+            log="$logs/logs-$side.log"
+            : > "$log"
+            if ! run_as_app bash "$reach" "$start_script" "$app" >> "$log" 2>&1; then
+              echo "FAILED the app user cannot reach $app, so its start script was never started." >> "$log"
+              return 0
+            fi
+            run_as_app bash "$start_script" "$app" "$port" >> "$log" 2>&1 &
+            echo $!
+          }
+          parent_pid=$(start_side parent 8787)
+          head_pid=$(start_side head 8789)
+          # Ten minutes is the cap, not the plan: the wait ends the moment a starter that has not
+          # printed READY or FAILED dies, instead of sleeping out the whole deadline.
+          bash "$PSTACK_VERIFIER_DIR/wait-for-start.sh" 600 \
+            parent "$logs/logs-parent.log" "$parent_pid" \
+            head "$logs/logs-head.log" "$head_pid" || true
           for side in parent head; do
-            if grep -q '^READY ' "$RUNNER_TEMP/pstack/logs-$side.log" 2>/dev/null; then
+            if grep -q '^READY ' "$logs/logs-$side.log" 2>/dev/null; then
               echo "$side: ready"
             else
               echo "$side: did not start" >> "$GITHUB_STEP_SUMMARY"
               echo "--- $side log ---" >> "$GITHUB_STEP_SUMMARY"
-              tail -40 "$RUNNER_TEMP/pstack/logs-$side.log" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+              tail -40 "$logs/logs-$side.log" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
               echo "--- $side log ---"
-              tail -40 "$RUNNER_TEMP/pstack/logs-$side.log" 2>/dev/null || true
+              tail -40 "$logs/logs-$side.log" 2>/dev/null || true
             fi
           done
 
       - name: Install the browser the drive tool uses
         run: |
           set -euo pipefail
-          cd "$GITHUB_WORKSPACE/parent"
+          cd /opt/pstack/parent
           if [ -x node_modules/.bin/playwright ]; then
             sudo env PATH="$PATH" PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \
               node_modules/.bin/playwright install-deps chromium
@@ -166,6 +187,8 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          # gh names the repository itself, so a call from outside a checkout never guesses one.
+          GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           # The DeepSeek verifier family runs the Pi coding agent and nothing else. Pinned to one
@@ -176,8 +199,8 @@ jobs:
             --pr "$PR_NUMBER" \
             --base-sha "$BASE_SHA" \
             --head-sha "$HEAD_SHA" \
-            --parent "$GITHUB_WORKSPACE/parent" \
-            --head-dir "$GITHUB_WORKSPACE/head" \
+            --parent "/opt/pstack/parent" \
+            --head-dir "/opt/pstack/head" \
             --changed-files "$RUNNER_TEMP/pstack/changed-files.txt" \
             --diff "$RUNNER_TEMP/pstack/pr.diff" \
             --feature-map "$PSTACK_FEATURE_MAP" \
@@ -189,6 +212,8 @@ jobs:
             --head-app "http://localhost:5173/head/" \
             --drive "$PSTACK_VERIFIER_DIR/drive.mjs" \
             --scratch "$RUNNER_TEMP/pstack/scratch" \
+            --head-start-log "$RUNNER_TEMP/pstack/logs-head.log" \
+            --parent-start-log "$RUNNER_TEMP/pstack/logs-parent.log" \
             --verifier-source "$PSTACK_VERIFIER_SOURCE"
 
       - name: Keep the verifier's report, screenshots and app logs

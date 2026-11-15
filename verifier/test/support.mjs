@@ -37,6 +37,8 @@ export function harness({
   featureMap = featureMapPath,
   headStarted = true,
   parentStarted = true,
+  headStartLog = null,
+  parentStartLog = null,
 } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "pstack-test-"));
   const changedFilesFile = join(dir, "changed.txt");
@@ -44,6 +46,15 @@ export function harness({
   const scratch = join(dir, "scratch");
   writeFileSync(changedFilesFile, `${changedFiles.join("\n")}\n`);
   writeFileSync(prBodyFile, prBody);
+  // The two start logs the workflow tails into the comment. null means the flag was not passed,
+  // which is the case where the comment has to say no log arrived.
+  const startLogs = [];
+  for (const [side, content] of [["head", headStartLog], ["parent", parentStartLog]]) {
+    if (content === null) continue;
+    const file = join(dir, `logs-${side}.log`);
+    writeFileSync(file, content);
+    startLogs.push(`--${side}-start-log`, file);
+  }
 
   const calls = { agent: [], comment: [] };
   const env = {
@@ -66,6 +77,7 @@ export function harness({
     "--pr-title", "SOFT-2383: something",
     "--scratch", scratch,
     "--drive", driveToolPath,
+    ...startLogs,
     "--no-comment",
   ];
 
@@ -85,10 +97,11 @@ export function harness({
             error: null,
           };
         }),
-        checkUrl: overrides.checkUrl ?? (async (url) => ({
-          ok: url.includes("8789") || url.includes("/head/") ? headStarted : parentStarted,
-          status: 200,
-        })),
+        checkUrl: overrides.checkUrl ?? (async (url) => {
+          const ok = url.includes("8789") || url.includes("/head/") ? headStarted : parentStarted;
+          // A refused connection is status 0, which is what the real checkUrl reports.
+          return { ok, status: ok ? 200 : 0 };
+        }),
         postComment: overrides.postComment ?? (async (options) => {
           calls.comment.push(options);
         }),

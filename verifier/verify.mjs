@@ -13,6 +13,7 @@
 //   --feature-map <file> --diff <file> --pr-title <text> --pr-body-file <file>
 //   --parent-api <url> --head-api <url> --parent-app <url> --head-app <url>
 //   --drive <drive tool> --scratch <dir> --no-comment
+//   --head-start-log <file> --parent-start-log <file>
 //
 // Fail closed: any of these ends the run as FAIL with a reason class and no agent call, or no
 // verdict from the agent: missing login variable, CLI error, timeout, empty or non-JSON
@@ -64,6 +65,9 @@ export const VERDICTS = ["ok", "regression", "broken_on_both", "not_drivable"];
 export const SEVERITIES = ["blocker", "major", "minor", "note", "none"];
 export const ANSWER_KEYS = ["feature", "parent_result", "head_result", "verdict", "evidence", "severity"];
 export const SMOKE_FEATURE = "Sign in and open today's home";
+// How much of a start log the comment carries when a checkout did not start. The first real run
+// failed with "answered 0 on /health" and the actual reason lived only in the job log.
+export const START_LOG_LINES = 20;
 
 export const STATUS = { pass: "PASS", passNotes: "PASS+NOTES", fail: "FAIL" };
 
@@ -98,6 +102,7 @@ export function parseArgs(argv) {
     "--pr", "--base-sha", "--head-sha", "--parent", "--head-dir", "--changed-files",
     "--feature-map", "--diff", "--pr-title", "--pr-body-file", "--parent-api", "--head-api",
     "--parent-app", "--head-app", "--drive", "--scratch", "--verifier-source",
+    "--head-start-log", "--parent-start-log",
   ]);
   for (let i = 0; i < argv.length; i++) {
     const flag = argv[i];
@@ -127,6 +132,10 @@ export function parseArgs(argv) {
     driveTool: resolve(flags.get("drive") ?? "verifier/drive.mjs"),
     scratch: resolve(flags.get("scratch") ?? "/tmp/pstack-verifier"),
     verifierSource: flags.get("verifier-source") ?? "parent",
+    // The start step's own log for each checkout, so a failed start explains itself in the
+    // comment instead of only in the job log.
+    headStartLog: flags.get("head-start-log") ?? "",
+    parentStartLog: flags.get("parent-start-log") ?? "",
     comment: flags.get("comment") !== "0",
   };
 }
@@ -645,6 +654,21 @@ const readOptional = (file) => (file !== "" && existsSync(file) ? readFileSync(f
 
 const lastLines = (text, count) => String(text ?? "").trim().split("\n").slice(-count).join("\n");
 
+// The tail of a start log, as body lines. A run that could not start the app must say why, so a
+// missing log is reported as missing rather than dropped. The start step runs with no login in
+// its environment at all, and every secret of this run is redacted on the way out as well.
+export function renderStartLog(label, file, secrets) {
+  const heading = `**Last ${START_LOG_LINES} lines of the ${label} start log**`;
+  if (file === "" || !existsSync(file)) {
+    return ["", heading, "", `_No ${label} start log was passed to the verifier, so this run cannot say why that checkout did not start._`];
+  }
+  const text = redact(readFileSync(file, "utf8"), secrets).replace(/\s+$/, "");
+  if (text.trim() === "") {
+    return ["", heading, "", `_The ${label} start log at \`${file}\` is empty._`];
+  }
+  return ["", heading, "", "```", ...text.split("\n").slice(-START_LOG_LINES), "```"];
+}
+
 // ------------------------------------------------------------------- main
 
 export async function main(argv, injected = {}) {
@@ -758,6 +782,12 @@ export async function main(argv, injected = {}) {
 
   const extraNotes = [];
   if (detail !== "") extraNotes.push(`Detail: ${redact(detail, secrets)}`, "");
+  if (reasons.includes(REASONS.headNotStarted)) {
+    extraNotes.push(...renderStartLog("head", opts.headStartLog, secrets), "");
+  }
+  if (!parentStarted) {
+    extraNotes.push(...renderStartLog("parent", opts.parentStartLog, secrets), "");
+  }
 
   const body = redact(
     renderBody({
