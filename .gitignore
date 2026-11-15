@@ -5,6 +5,7 @@ node_modules
 .env
 *.log
 dist-app/
+.verifier-run/
 # Capacitor generates the Android project from the web bundle on CI.
 android/
 .unlazy/
