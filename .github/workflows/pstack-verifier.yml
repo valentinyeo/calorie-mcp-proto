@@ -37,6 +37,16 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           exit 1
 
+      # gh resolves the repository by running git. The base and head checkouts below live in
+      # subdirectories, so the workspace root needs its own checkout or that lookup dies with
+      # "not a git repository". Full history puts both commits in this checkout. Verifier
+      # scripts still come from the base checkout, or from the head checkout on the first run.
+      - name: Check out the repository so both commits exist
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
       - name: Check out the pull request's base commit
         uses: actions/checkout@v4
         with:
@@ -59,8 +69,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
+          git rev-parse --verify "$BASE_SHA^{commit}" >/dev/null
+          git rev-parse --verify "$HEAD_SHA^{commit}" >/dev/null
           work="$RUNNER_TEMP/pstack"
           mkdir -p "$work"
           if [ -f parent/verifier/verify.mjs ] && [ -f parent/docs/feature-map.md ]; then
