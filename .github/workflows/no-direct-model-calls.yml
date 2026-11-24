@@ -1,0 +1,21 @@
+name: No direct model calls
+
+# Fails this repo's checks when .github/ or tools/ calls a model API directly instead of going
+# through valentinyeo/token-ladder's ladder-call (VSTA-107). The scan is token-ladder's own
+# ci/lint-direct-model-calls, read from @main, so this repo carries no copy of it.
+#
+# A file that must keep a provider URL or a model key goes in .github/ladder-call-allow, one
+# line per file: <path>:<reason>:<until YYYY-MM-DD>. An expired line fails the check.
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  no-direct-model-calls:
+    name: no-direct-model-calls
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No direct model calls
+        uses: valentinyeo/token-ladder/.github/actions/lint-direct-model-calls@main

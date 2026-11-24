@@ -176,10 +176,16 @@ jobs:
       - name: Run the verifier's own offline tests
         run: node --test "$PSTACK_VERIFIER_DIR/test/*.test.mjs"
 
-      - name: Run the pstack verifier (the only step that receives the model login)
+      - name: Run the pstack verifier (the only step that receives a model login)
         env:
           GH_TOKEN: ${{ github.token }}
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # The one login this step takes is the ladder's opencode-go lane key. verifier/verify.mjs
+          # picks the verifier family from the author-model table, and that table sends every
+          # author to DeepSeek through Pi on opencode-go (owner's decision, 2026-11-15), so the
+          # Claude Code path below it never runs and the step needs no Claude plan token
+          # (VSTA-107). Re-adding the Claude plan token here would spend Valentin's Claude week
+          # in CI; if the table ever sends a pull request to the Claude path, route it through
+          # valentinyeo/token-ladder instead.
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
           PLAYWRIGHT_BROWSERS_PATH: /opt/pw-browsers
           PSTACK_AGENT_TIMEOUT_MS: "900000"
